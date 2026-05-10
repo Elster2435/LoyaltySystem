@@ -9,12 +9,12 @@ namespace LoyaltySystem.Wpf
         {
             InitializeComponent();
 
-            MainFrame.Navigate(new TransactionsPage());
+            MainFrame.Navigate(new MonitoringPage());
         }
 
         private void MonitoringButton_Click(object sender, RoutedEventArgs e)
         {
-            //MainFrame.Navigate(new MonitoringPage());
+            MainFrame.Navigate(new MonitoringPage());
         }
 
         private void CustomersButton_Click(object sender, RoutedEventArgs e)

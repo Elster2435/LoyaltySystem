@@ -122,13 +122,16 @@ namespace LoyaltySystem.Core.Services
             return db.CustomerLoyaltyAccounts
                 .AsNoTracking()
                 .Include(x => x.Level)
-                .GroupBy(x => x.Level!.LevelName)
+                .AsEnumerable()
+                .GroupBy(x => x.Level?.LevelName ?? "Не указан")
                 .Select(g => new LoyaltyLevelStatisticsItem
                 {
                     LevelName = g.Key,
                     CustomerCount = g.Count(),
                     TotalSpent = g.Sum(x => x.TotalSpent),
-                    AverageBonusBalance = g.Average(x => x.BonusBalance)
+                    AverageBonusBalance = g.Any()
+                        ? g.Average(x => x.BonusBalance)
+                        : 0
                 })
                 .OrderByDescending(x => x.TotalSpent)
                 .ToList();
@@ -138,45 +141,70 @@ namespace LoyaltySystem.Core.Services
         {
             using var db = DbContextFactory.Create();
 
-            return db.CustomerLoyaltyAccounts
+            var accounts = db.CustomerLoyaltyAccounts
                 .AsNoTracking()
                 .Include(x => x.Customer)
                 .Include(x => x.Level)
                 .OrderByDescending(x => x.TotalSpent)
                 .Take(count)
-                .AsEnumerable()
-                .Select(x => new TopCustomerItem
+                .ToList();
+
+            var customerIds = accounts
+                .Select(x => x.CustomerId)
+                .ToList();
+
+            var transactionStats = db.Transactions
+                .AsNoTracking()
+                .Where(x => x.CustomerId != null &&
+                            customerIds.Contains(x.CustomerId.Value))
+                .GroupBy(x => x.CustomerId!.Value)
+                .Select(g => new
                 {
-                    CustomerId = x.CustomerId,
+                    CustomerId = g.Key,
 
-                    CustomerFullName = x.Customer == null
-                        ? "Клиент удален"
-                        : BuildFullName(
-                            x.Customer.LastName,
-                            x.Customer.FirstName,
-                            x.Customer.MiddleName),
+                    PurchaseCount = g.Count(x =>
+                        x.TransactionType == TransactionTypeEnum.Purchase),
 
-                    LevelName = x.Level?.LevelName ?? "Не указан",
+                    ReturnCount = g.Count(x =>
+                        x.TransactionType == TransactionTypeEnum.Return),
 
-                    TotalSpent = x.TotalSpent,
-
-                    BonusBalance = x.BonusBalance,
-
-                    PurchaseCount = db.Transactions.Count(t =>
-                        t.CustomerId == x.CustomerId &&
-                        t.TransactionType == TransactionTypeEnum.Purchase),
-
-                    ReturnCount = db.Transactions.Count(t =>
-                        t.CustomerId == x.CustomerId &&
-                        t.TransactionType == TransactionTypeEnum.Return),
-
-                    LastPurchaseDate = db.Transactions
-                        .Where(t =>
-                            t.CustomerId == x.CustomerId &&
-                            t.TransactionType == TransactionTypeEnum.Purchase)
-                        .OrderByDescending(t => t.TransactionDatetime)
-                        .Select(t => (DateTime?)t.TransactionDatetime)
+                    LastPurchaseDate = g
+                        .Where(x => x.TransactionType == TransactionTypeEnum.Purchase)
+                        .OrderByDescending(x => x.TransactionDatetime)
+                        .Select(x => (DateTime?)x.TransactionDatetime)
                         .FirstOrDefault()
+                })
+                .ToList();
+
+            return accounts
+                .Select(x =>
+                {
+                    var stats = transactionStats
+                        .FirstOrDefault(s => s.CustomerId == x.CustomerId);
+
+                    return new TopCustomerItem
+                    {
+                        CustomerId = x.CustomerId,
+
+                        CustomerFullName = x.Customer == null
+                            ? "Клиент удален"
+                            : BuildFullName(
+                                x.Customer.LastName,
+                                x.Customer.FirstName,
+                                x.Customer.MiddleName),
+
+                        LevelName = x.Level?.LevelName ?? "Не указан",
+
+                        TotalSpent = x.TotalSpent,
+
+                        BonusBalance = x.BonusBalance,
+
+                        PurchaseCount = stats?.PurchaseCount ?? 0,
+
+                        ReturnCount = stats?.ReturnCount ?? 0,
+
+                        LastPurchaseDate = stats?.LastPurchaseDate
+                    };
                 })
                 .ToList();
         }
@@ -187,22 +215,38 @@ namespace LoyaltySystem.Core.Services
 
             var currentDate = DateTime.Today;
 
-            var customers = db.CustomerLoyaltyAccounts
+            var accounts = db.CustomerLoyaltyAccounts
                 .AsNoTracking()
                 .Include(x => x.Customer)
                 .Include(x => x.Level)
                 .Where(x => x.Customer != null &&
                             x.Customer.Status == StatusEnum.Active)
-                .AsEnumerable()
+                .ToList();
+
+            var customerIds = accounts
+                .Select(x => x.CustomerId)
+                .ToList();
+
+            var lastPurchaseDates = db.Transactions
+                .AsNoTracking()
+                .Where(x =>
+                    x.CustomerId != null &&
+                    customerIds.Contains(x.CustomerId.Value) &&
+                    x.TransactionType == TransactionTypeEnum.Purchase)
+                .GroupBy(x => x.CustomerId!.Value)
+                .Select(g => new
+                {
+                    CustomerId = g.Key,
+                    LastPurchaseDate = g.Max(x => x.TransactionDatetime)
+                })
+                .ToList();
+
+            return accounts
                 .Select(x =>
                 {
-                    var lastPurchaseDate = db.Transactions
-                        .Where(t =>
-                            t.CustomerId == x.CustomerId &&
-                            t.TransactionType == TransactionTypeEnum.Purchase)
-                        .OrderByDescending(t => t.TransactionDatetime)
-                        .Select(t => (DateTime?)t.TransactionDatetime)
-                        .FirstOrDefault();
+                    var lastPurchaseDate = lastPurchaseDates
+                        .FirstOrDefault(p => p.CustomerId == x.CustomerId)
+                        ?.LastPurchaseDate;
 
                     var daysSinceLastPurchase = lastPurchaseDate == null
                         ? int.MaxValue
@@ -235,8 +279,6 @@ namespace LoyaltySystem.Core.Services
                 .Where(x => x.DaysSinceLastPurchase >= daysWithoutPurchases)
                 .OrderByDescending(x => x.DaysSinceLastPurchase)
                 .ToList();
-
-            return customers;
         }
 
         public List<PromotionAnalyticsItem> GetPromotionAnalytics(DateTime? startDate = null, DateTime? endDate = null)

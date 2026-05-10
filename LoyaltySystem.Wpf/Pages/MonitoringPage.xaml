@@ -1,0 +1,542 @@
+﻿<Page x:Class="LoyaltySystem.Wpf.Pages.MonitoringPage"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      Title="MonitoringPage">
+
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <Grid Margin="15">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="15"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="15"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="15"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="15"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="15"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="15"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="15"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+
+            <TextBlock Grid.Row="0"
+                       Text="Мониторинг программы лояльности"
+                       FontSize="24"
+                       FontWeight="Bold"/>
+
+            <!-- Общие показатели -->
+            <GroupBox Grid.Row="2"
+                      Header="Общие показатели">
+                <UniformGrid Columns="4"
+                             Margin="10">
+
+                    <Border BorderBrush="LightGray"
+                            BorderThickness="1"
+                            Padding="10"
+                            Margin="5">
+                        <StackPanel>
+                            <TextBlock Text="Всего клиентов"
+                                       FontWeight="Bold"/>
+                            <TextBlock x:Name="TotalCustomersTextBlock"
+                                       FontSize="20"/>
+                        </StackPanel>
+                    </Border>
+
+                    <Border BorderBrush="LightGray"
+                            BorderThickness="1"
+                            Padding="10"
+                            Margin="5">
+                        <StackPanel>
+                            <TextBlock Text="Активных клиентов"
+                                       FontWeight="Bold"/>
+                            <TextBlock x:Name="ActiveCustomersTextBlock"
+                                       FontSize="20"/>
+                        </StackPanel>
+                    </Border>
+
+                    <Border BorderBrush="LightGray"
+                            BorderThickness="1"
+                            Padding="10"
+                            Margin="5">
+                        <StackPanel>
+                            <TextBlock Text="Всего покупок"
+                                       FontWeight="Bold"/>
+                            <TextBlock x:Name="TotalPurchasesTextBlock"
+                                       FontSize="20"/>
+                        </StackPanel>
+                    </Border>
+
+                    <Border BorderBrush="LightGray"
+                            BorderThickness="1"
+                            Padding="10"
+                            Margin="5">
+                        <StackPanel>
+                            <TextBlock Text="Всего возвратов"
+                                       FontWeight="Bold"/>
+                            <TextBlock x:Name="TotalReturnsTextBlock"
+                                       FontSize="20"/>
+                        </StackPanel>
+                    </Border>
+
+                    <Border BorderBrush="LightGray"
+                            BorderThickness="1"
+                            Padding="10"
+                            Margin="5">
+                        <StackPanel>
+                            <TextBlock Text="Сумма покупок"
+                                       FontWeight="Bold"/>
+                            <TextBlock x:Name="GrossPurchaseAmountTextBlock"
+                                       FontSize="20"/>
+                        </StackPanel>
+                    </Border>
+
+                    <Border BorderBrush="LightGray"
+                            BorderThickness="1"
+                            Padding="10"
+                            Margin="5">
+                        <StackPanel>
+                            <TextBlock Text="Чистая выручка"
+                                       FontWeight="Bold"/>
+                            <TextBlock x:Name="NetRevenueTextBlock"
+                                       FontSize="20"/>
+                        </StackPanel>
+                    </Border>
+
+                    <Border BorderBrush="LightGray"
+                            BorderThickness="1"
+                            Padding="10"
+                            Margin="5">
+                        <StackPanel>
+                            <TextBlock Text="Активные акции"
+                                       FontWeight="Bold"/>
+                            <TextBlock x:Name="ActivePromotionsTextBlock"
+                                       FontSize="20"/>
+                        </StackPanel>
+                    </Border>
+
+                    <Border BorderBrush="LightGray"
+                            BorderThickness="1"
+                            Padding="10"
+                            Margin="5">
+                        <StackPanel>
+                            <TextBlock Text="Активные предложения"
+                                       FontWeight="Bold"/>
+                            <TextBlock x:Name="ActiveOffersTextBlock"
+                                       FontSize="20"/>
+                        </StackPanel>
+                    </Border>
+
+                    <Border BorderBrush="LightGray"
+                            BorderThickness="1"
+                            Padding="10"
+                            Margin="5">
+                        <StackPanel>
+                            <TextBlock Text="Начислено бонусов"
+                                       FontWeight="Bold"/>
+                            <TextBlock x:Name="TotalBonusAccruedTextBlock"
+                                       FontSize="20"/>
+                        </StackPanel>
+                    </Border>
+
+                    <Border BorderBrush="LightGray"
+                            BorderThickness="1"
+                            Padding="10"
+                            Margin="5">
+                        <StackPanel>
+                            <TextBlock Text="Списано бонусов"
+                                       FontWeight="Bold"/>
+                            <TextBlock x:Name="TotalBonusUsedTextBlock"
+                                       FontSize="20"/>
+                        </StackPanel>
+                    </Border>
+
+                    <Border BorderBrush="LightGray"
+                            BorderThickness="1"
+                            Padding="10"
+                            Margin="5">
+                        <StackPanel>
+                            <TextBlock Text="Возвращено бонусов"
+                                       FontWeight="Bold"/>
+                            <TextBlock x:Name="TotalBonusReturnedTextBlock"
+                                       FontSize="20"/>
+                        </StackPanel>
+                    </Border>
+
+                    <Border BorderBrush="LightGray"
+                            BorderThickness="1"
+                            Padding="10"
+                            Margin="5">
+                        <StackPanel>
+                            <TextBlock Text="Аннулировано бонусов"
+                                       FontWeight="Bold"/>
+                            <TextBlock x:Name="TotalBonusCancelledTextBlock"
+                                       FontSize="20"/>
+                        </StackPanel>
+                    </Border>
+
+                </UniformGrid>
+            </GroupBox>
+
+            <GroupBox Grid.Row="4"
+                      Header="Показатели за период">
+                <Grid Margin="10">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="15"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+
+                    <StackPanel Grid.Row="0"
+                                Orientation="Horizontal">
+
+                        <TextBlock Text="С:"
+                                   VerticalAlignment="Center"
+                                   Margin="0,0,5,0"/>
+
+                        <DatePicker x:Name="StartDatePicker"
+                                    Width="140"
+                                    Margin="0,0,15,0"/>
+
+                        <TextBlock Text="По:"
+                                   VerticalAlignment="Center"
+                                   Margin="0,0,5,0"/>
+
+                        <DatePicker x:Name="EndDatePicker"
+                                    Width="140"
+                                    Margin="0,0,15,0"/>
+
+                        <Button Content="Применить фильтр"
+                                Width="150"
+                                Height="30"
+                                Click="ApplyPeriodFilterButton_Click"/>
+
+                        <Button Content="Сбросить"
+                                Width="100"
+                                Height="30"
+                                Margin="10,0,0,0"
+                                Click="ResetPeriodFilterButton_Click"/>
+                    </StackPanel>
+
+                    <UniformGrid Grid.Row="2"
+                                 Columns="4">
+
+                        <Border BorderBrush="LightGray"
+                                BorderThickness="1"
+                                Padding="10"
+                                Margin="5">
+                            <StackPanel>
+                                <TextBlock Text="Покупок"
+                                           FontWeight="Bold"/>
+                                <TextBlock x:Name="PeriodPurchasesTextBlock"
+                                           FontSize="18"/>
+                            </StackPanel>
+                        </Border>
+
+                        <Border BorderBrush="LightGray"
+                                BorderThickness="1"
+                                Padding="10"
+                                Margin="5">
+                            <StackPanel>
+                                <TextBlock Text="Возвратов"
+                                           FontWeight="Bold"/>
+                                <TextBlock x:Name="PeriodReturnsTextBlock"
+                                           FontSize="18"/>
+                            </StackPanel>
+                        </Border>
+
+                        <Border BorderBrush="LightGray"
+                                BorderThickness="1"
+                                Padding="10"
+                                Margin="5">
+                            <StackPanel>
+                                <TextBlock Text="Сумма покупок"
+                                           FontWeight="Bold"/>
+                                <TextBlock x:Name="PeriodGrossAmountTextBlock"
+                                           FontSize="18"/>
+                            </StackPanel>
+                        </Border>
+
+                        <Border BorderBrush="LightGray"
+                                BorderThickness="1"
+                                Padding="10"
+                                Margin="5">
+                            <StackPanel>
+                                <TextBlock Text="Чистая выручка"
+                                           FontWeight="Bold"/>
+                                <TextBlock x:Name="PeriodNetRevenueTextBlock"
+                                           FontSize="18"/>
+                            </StackPanel>
+                        </Border>
+
+                        <Border BorderBrush="LightGray"
+                                BorderThickness="1"
+                                Padding="10"
+                                Margin="5">
+                            <StackPanel>
+                                <TextBlock Text="Начислено бонусов"
+                                           FontWeight="Bold"/>
+                                <TextBlock x:Name="PeriodBonusAccruedTextBlock"
+                                           FontSize="18"/>
+                            </StackPanel>
+                        </Border>
+
+                        <Border BorderBrush="LightGray"
+                                BorderThickness="1"
+                                Padding="10"
+                                Margin="5">
+                            <StackPanel>
+                                <TextBlock Text="Списано бонусов"
+                                           FontWeight="Bold"/>
+                                <TextBlock x:Name="PeriodBonusUsedTextBlock"
+                                           FontSize="18"/>
+                            </StackPanel>
+                        </Border>
+
+                        <Border BorderBrush="LightGray"
+                                BorderThickness="1"
+                                Padding="10"
+                                Margin="5">
+                            <StackPanel>
+                                <TextBlock Text="Возвращено бонусов"
+                                           FontWeight="Bold"/>
+                                <TextBlock x:Name="PeriodBonusReturnedTextBlock"
+                                           FontSize="18"/>
+                            </StackPanel>
+                        </Border>
+
+                        <Border BorderBrush="LightGray"
+                                BorderThickness="1"
+                                Padding="10"
+                                Margin="5">
+                            <StackPanel>
+                                <TextBlock Text="Аннулировано бонусов"
+                                           FontWeight="Bold"/>
+                                <TextBlock x:Name="PeriodBonusCancelledTextBlock"
+                                           FontSize="18"/>
+                            </StackPanel>
+                        </Border>
+
+                    </UniformGrid>
+                </Grid>
+            </GroupBox>
+
+            <GroupBox Grid.Row="6"
+                      Header="Статистика по уровням лояльности">
+                <DataGrid x:Name="LoyaltyLevelStatisticsDataGrid"
+                          Margin="10"
+                          Height="220"
+                          AutoGenerateColumns="False"
+                          IsReadOnly="True"
+                          CanUserAddRows="False"
+                          CanUserDeleteRows="False">
+
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="Уровень"
+                                            Binding="{Binding LevelName}"
+                                            Width="*"/>
+
+                        <DataGridTextColumn Header="Количество клиентов"
+                                            Binding="{Binding CustomerCount}"
+                                            Width="160"/>
+
+                        <DataGridTextColumn Header="Общая сумма"
+                                            Binding="{Binding TotalSpent, StringFormat=N2}"
+                                            Width="140"/>
+
+                        <DataGridTextColumn Header="Средний баланс бонусов"
+                                            Binding="{Binding AverageBonusBalance, StringFormat=N2}"
+                                            Width="180"/>
+                    </DataGrid.Columns>
+                </DataGrid>
+            </GroupBox>
+
+            <GroupBox Grid.Row="8"
+                      Header="Топ клиентов">
+                <DataGrid x:Name="TopCustomersDataGrid"
+                          Margin="10"
+                          Height="260"
+                          AutoGenerateColumns="False"
+                          IsReadOnly="True"
+                          CanUserAddRows="False"
+                          CanUserDeleteRows="False">
+
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="ID"
+                                            Binding="{Binding CustomerId}"
+                                            Width="70"/>
+
+                        <DataGridTextColumn Header="Клиент"
+                                            Binding="{Binding CustomerFullName}"
+                                            Width="220"/>
+
+                        <DataGridTextColumn Header="Уровень"
+                                            Binding="{Binding LevelName}"
+                                            Width="120"/>
+
+                        <DataGridTextColumn Header="Всего потрачено"
+                                            Binding="{Binding TotalSpent, StringFormat=N2}"
+                                            Width="140"/>
+
+                        <DataGridTextColumn Header="Баланс бонусов"
+                                            Binding="{Binding BonusBalance, StringFormat=N2}"
+                                            Width="130"/>
+
+                        <DataGridTextColumn Header="Покупок"
+                                            Binding="{Binding PurchaseCount}"
+                                            Width="90"/>
+
+                        <DataGridTextColumn Header="Возвратов"
+                                            Binding="{Binding ReturnCount}"
+                                            Width="90"/>
+
+                        <DataGridTextColumn Header="Последняя покупка"
+                                            Binding="{Binding LastPurchaseDate, StringFormat=dd.MM.yyyy HH:mm}"
+                                            Width="160"/>
+                    </DataGrid.Columns>
+                </DataGrid>
+            </GroupBox>
+
+            <GroupBox Grid.Row="10"
+                      Header="Неактивные клиенты">
+                <DataGrid x:Name="InactiveCustomersDataGrid"
+                          Margin="10"
+                          Height="260"
+                          AutoGenerateColumns="False"
+                          IsReadOnly="True"
+                          CanUserAddRows="False"
+                          CanUserDeleteRows="False">
+
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="ID"
+                                            Binding="{Binding CustomerId}"
+                                            Width="70"/>
+
+                        <DataGridTextColumn Header="Клиент"
+                                            Binding="{Binding CustomerFullName}"
+                                            Width="220"/>
+
+                        <DataGridTextColumn Header="Телефон"
+                                            Binding="{Binding Phone}"
+                                            Width="130"/>
+
+                        <DataGridTextColumn Header="Уровень"
+                                            Binding="{Binding LevelName}"
+                                            Width="120"/>
+
+                        <DataGridTextColumn Header="Бонусы"
+                                            Binding="{Binding BonusBalance, StringFormat=N2}"
+                                            Width="110"/>
+
+                        <DataGridTextColumn Header="Всего потрачено"
+                                            Binding="{Binding TotalSpent, StringFormat=N2}"
+                                            Width="140"/>
+
+                        <DataGridTextColumn Header="Последняя покупка"
+                                            Binding="{Binding LastPurchaseDate, StringFormat=dd.MM.yyyy HH:mm}"
+                                            Width="160"/>
+
+                        <DataGridTextColumn Header="Дней без покупок"
+                                            Binding="{Binding DaysSinceLastPurchase}"
+                                            Width="140"/>
+                    </DataGrid.Columns>
+                </DataGrid>
+            </GroupBox>
+
+            <GroupBox Grid.Row="12"
+                      Header="Эффективность акций">
+                <DataGrid x:Name="PromotionAnalyticsDataGrid"
+                          Margin="10"
+                          Height="260"
+                          AutoGenerateColumns="False"
+                          IsReadOnly="True"
+                          CanUserAddRows="False"
+                          CanUserDeleteRows="False">
+
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="ID"
+                                            Binding="{Binding PromotionId}"
+                                            Width="70"/>
+
+                        <DataGridTextColumn Header="Акция"
+                                            Binding="{Binding PromotionName}"
+                                            Width="240"/>
+
+                        <DataGridTextColumn Header="Тип"
+                                            Binding="{Binding PromotionType}"
+                                            Width="140"/>
+
+                        <DataGridTextColumn Header="Использований"
+                                            Binding="{Binding UsageCount}"
+                                            Width="120"/>
+
+                        <DataGridTextColumn Header="Сумма покупок"
+                                            Binding="{Binding GrossPurchaseAmount, StringFormat=N2}"
+                                            Width="140"/>
+
+                        <DataGridTextColumn Header="Выручка"
+                                            Binding="{Binding NetRevenue, StringFormat=N2}"
+                                            Width="130"/>
+
+                        <DataGridTextColumn Header="Начислено"
+                                            Binding="{Binding BonusAccrued, StringFormat=N2}"
+                                            Width="120"/>
+
+                        <DataGridTextColumn Header="Списано"
+                                            Binding="{Binding BonusUsed, StringFormat=N2}"
+                                            Width="120"/>
+                    </DataGrid.Columns>
+                </DataGrid>
+            </GroupBox>
+
+            <GroupBox Grid.Row="14"
+                      Header="Аналитика персональных предложений">
+                <DataGrid x:Name="OfferAnalyticsDataGrid"
+                          Margin="10"
+                          Height="260"
+                          AutoGenerateColumns="False"
+                          IsReadOnly="True"
+                          CanUserAddRows="False"
+                          CanUserDeleteRows="False">
+
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="ID акции"
+                                            Binding="{Binding PromotionId}"
+                                            Width="90"/>
+
+                        <DataGridTextColumn Header="Предложение"
+                                            Binding="{Binding PromotionName}"
+                                            Width="240"/>
+
+                        <DataGridTextColumn Header="Тип"
+                                            Binding="{Binding PromotionType}"
+                                            Width="140"/>
+
+                        <DataGridTextColumn Header="Назначено"
+                                            Binding="{Binding AssignedCount}"
+                                            Width="110"/>
+
+                        <DataGridTextColumn Header="Использовано"
+                                            Binding="{Binding UsedCount}"
+                                            Width="120"/>
+
+                        <DataGridTextColumn Header="Истекло"
+                                            Binding="{Binding ExpiredCount}"
+                                            Width="100"/>
+
+                        <DataGridTextColumn Header="Отменено"
+                                            Binding="{Binding CancelledCount}"
+                                            Width="100"/>
+
+                        <DataGridTextColumn Header="Эффективность, %"
+                                            Binding="{Binding UsagePercent, StringFormat=N2}"
+                                            Width="140"/>
+                    </DataGrid.Columns>
+                </DataGrid>
+            </GroupBox>
+        </Grid>
+    </ScrollViewer>
+</Page>

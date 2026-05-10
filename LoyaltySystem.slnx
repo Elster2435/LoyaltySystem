@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="LoyaltySystem.Core/LoyaltySystem.Core.csproj" />
+  <Project Path="LoyaltySystem.Wpf/LoyaltySystem.Wpf.csproj" />
+</Solution>

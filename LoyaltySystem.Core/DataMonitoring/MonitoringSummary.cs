@@ -22,6 +22,8 @@
 
         public decimal TotalBonusCancelled { get; set; }
 
+        public decimal TotalBonusCompensationAmount { get; set; }
+
         public int ActiveOffers { get; set; }
 
         public int ActivePromotions { get; set; }

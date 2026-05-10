@@ -51,6 +51,9 @@ namespace LoyaltySystem.Core.Services
                 TotalBonusCancelled = returns
                     .Sum(x => (decimal?)x.BonusAccrued) ?? 0,
 
+                TotalBonusCompensationAmount = returns
+                    .Sum(x => (decimal?)x.BonusCompensationAmount) ?? 0,
+
                 ActiveOffers = db.CustomerOffers
                     .Count(x => x.OfferStatus == OfferStatusEnum.Assigned),
 
@@ -111,7 +114,10 @@ namespace LoyaltySystem.Core.Services
                     .Sum(x => (decimal?)x.BonusUsed) ?? 0,
 
                 TotalBonusCancelled = returns
-                    .Sum(x => (decimal?)x.BonusAccrued) ?? 0
+                    .Sum(x => (decimal?)x.BonusAccrued) ?? 0,
+
+                TotalBonusCompensationAmount = returns
+                    .Sum(x => (decimal?)x.BonusCompensationAmount) ?? 0
             };
         }
 

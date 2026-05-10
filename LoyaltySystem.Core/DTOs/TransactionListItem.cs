@@ -22,6 +22,8 @@
 
         public decimal BonusAccrued { get; set; }
 
+        public decimal BonusCompensationAmount { get; set; }
+
         public string TransactionChannel { get; set; } = string.Empty;
 
         public int? PromotionId { get; set; }

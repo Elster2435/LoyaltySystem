@@ -28,7 +28,6 @@
                        FontSize="24"
                        FontWeight="Bold"/>
 
-            <!-- Общие показатели -->
             <GroupBox Grid.Row="2"
                       Header="Общие показатели">
                 <UniformGrid Columns="4"
@@ -178,6 +177,18 @@
                         </StackPanel>
                     </Border>
 
+                    <Border BorderBrush="LightGray"
+                            BorderThickness="1"
+                            Padding="10"
+                            Margin="5">
+                        <StackPanel>
+                            <TextBlock Text="Удержано при возвратах"
+                                       FontWeight="Bold"/>
+                            <TextBlock x:Name="TotalBonusCompensationTextBlock"
+                                       FontSize="20"/>
+                        </StackPanel>
+                    </Border>
+
                 </UniformGrid>
             </GroupBox>
 
@@ -317,6 +328,18 @@
                                            FontWeight="Bold"/>
                                 <TextBlock x:Name="PeriodBonusCancelledTextBlock"
                                            FontSize="18"/>
+                            </StackPanel>
+                        </Border>
+
+                        <Border BorderBrush="LightGray"
+                                BorderThickness="1"
+                                Padding="10"
+                                Margin="5"> 
+                            <StackPanel>
+                                <TextBlock Text="Удержано при возвратах"
+                                           FontWeight="Bold"/>
+                                <TextBlock x:Name="PeriodBonusCompensationTextBlock"
+                                           FontSize="20"/>
                             </StackPanel>
                         </Border>
 

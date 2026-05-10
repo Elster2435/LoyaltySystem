@@ -52,6 +52,7 @@ namespace LoyaltySystem.Wpf.Pages
             TotalBonusUsedTextBlock.Text = FormatBonus(summary.TotalBonusUsed);
             TotalBonusReturnedTextBlock.Text = FormatBonus(summary.TotalBonusReturned);
             TotalBonusCancelledTextBlock.Text = FormatBonus(summary.TotalBonusCancelled);
+            TotalBonusCompensationTextBlock.Text = FormatMoney(summary.TotalBonusCompensationAmount);
         }
 
         private void LoadPeriodSummary(DateTime? startDate, DateTime? endDate)
@@ -68,6 +69,7 @@ namespace LoyaltySystem.Wpf.Pages
             PeriodBonusUsedTextBlock.Text = FormatBonus(periodSummary.TotalBonusUsed);
             PeriodBonusReturnedTextBlock.Text = FormatBonus(periodSummary.TotalBonusReturned);
             PeriodBonusCancelledTextBlock.Text = FormatBonus(periodSummary.TotalBonusCancelled);
+            PeriodBonusCompensationTextBlock.Text = FormatMoney(periodSummary.TotalBonusCompensationAmount);
         }
 
         private void LoadTables()

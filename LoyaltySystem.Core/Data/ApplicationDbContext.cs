@@ -369,6 +369,10 @@ namespace LoyaltySystem.Core.Data
                     .HasColumnName("bonus_accrued")
                     .HasPrecision(12, 2);
 
+                entity.Property(x => x.BonusCompensationAmount)
+                    .HasColumnName("bonus_compensation_amount")
+                    .HasPrecision(12, 2);
+
                 entity.Property(x => x.TransactionChannel)
                     .HasColumnName("transaction_channel")
                     .HasColumnType("transaction_channel_enum")

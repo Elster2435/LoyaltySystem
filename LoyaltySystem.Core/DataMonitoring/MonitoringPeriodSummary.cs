@@ -17,5 +17,7 @@
         public decimal TotalBonusReturned { get; set; }
 
         public decimal TotalBonusCancelled { get; set; }
+
+        public decimal TotalBonusCompensationAmount { get; set; }
     }
 }

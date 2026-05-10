@@ -71,13 +71,17 @@
                                     Binding="{Binding BonusUsed, StringFormat=N2}"
                                     Width="130"/>
 
-                <DataGridTextColumn Header="Оплачено"
+                <DataGridTextColumn Header="Оплачено / возвращено"
                                     Binding="{Binding PaidAmount, StringFormat=N2}"
                                     Width="110"/>
 
-                <DataGridTextColumn Header="Начислено бонусов"
+                <DataGridTextColumn Header="Начислено / аннулировано"
                                     Binding="{Binding BonusAccrued, StringFormat=N2}"
                                     Width="140"/>
+
+                <DataGridTextColumn Header="Удержано"
+                                    Binding="{Binding BonusCompensationAmount, StringFormat=N2}"
+                                    Width="110"/>
 
                 <DataGridTextColumn Header="Канал"
                                     Binding="{Binding TransactionChannel}"

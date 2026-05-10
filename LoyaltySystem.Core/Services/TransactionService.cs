@@ -35,6 +35,7 @@ namespace LoyaltySystem.Core.Services
                     BonusUsed = x.BonusUsed,
                     PaidAmount = x.PaidAmount,
                     BonusAccrued = x.BonusAccrued,
+                    BonusCompensationAmount = x.BonusCompensationAmount,
                     TransactionChannel = EnumDisplayHelper.GetPgName(x.TransactionChannel),
                     PromotionId = x.PromotionId,
                     OfferId = x.OfferId,
@@ -64,6 +65,7 @@ namespace LoyaltySystem.Core.Services
             transaction.OriginalTransactionId = null;
             transaction.PaidAmount = 0;
             transaction.BonusAccrued = 0;
+            transaction.BonusCompensationAmount = 0;
 
             db.Transactions.Add(transaction);
             db.SaveChanges();
@@ -81,6 +83,7 @@ namespace LoyaltySystem.Core.Services
                 BonusUsed = 0,
                 PaidAmount = 0,
                 BonusAccrued = 0,
+                BonusCompensationAmount = 0,
                 TransactionChannel = TransactionChannelEnum.Offline,
                 Comment = string.IsNullOrWhiteSpace(comment)
                     ? "Возврат покупки"

@@ -22,6 +22,8 @@ namespace LoyaltySystem.Core.Entities
 
         public decimal BonusAccrued { get; set; }
 
+        public decimal BonusCompensationAmount { get; set; }
+
         public TransactionChannelEnum TransactionChannel { get; set; }
 
         public int? PromotionId { get; set; }

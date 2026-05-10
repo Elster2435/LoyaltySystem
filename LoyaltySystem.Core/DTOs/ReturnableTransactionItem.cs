@@ -18,6 +18,8 @@
 
         public decimal BonusAccrued { get; set; }
 
+        public decimal BonusCompensationAmount { get; set; }
+
         public string DisplayText =>
             $"№{TransactionId} — {CustomerFullName} — {TransactionDatetime:dd.MM.yyyy HH:mm} — оплачено {PaidAmount:N2}";
     }

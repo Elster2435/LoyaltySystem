@@ -1,0 +1,55 @@
+﻿<Page x:Class="LoyaltySystem.Wpf.Pages.CustomerActivitiesPage"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      Title="CustomerActivitiesPage">
+
+    <Grid Margin="15">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="10"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <TextBlock Grid.Row="0"
+                   Text="Активность клиентов"
+                   FontSize="24"
+                   FontWeight="Bold"/>
+
+        <DataGrid x:Name="CustomerActivitiesDataGrid"
+                  Grid.Row="2"
+                  AutoGenerateColumns="False"
+                  IsReadOnly="True"
+                  SelectionMode="Single"
+                  CanUserAddRows="False"
+                  CanUserDeleteRows="False"
+                  CanUserResizeColumns="True"
+                  CanUserSortColumns="True">
+
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="ID"
+                                    Binding="{Binding ActivityId}"
+                                    Width="70"/>
+
+                <DataGridTextColumn Header="ID клиента"
+                                    Binding="{Binding CustomerId}"
+                                    Width="90"/>
+
+                <DataGridTextColumn Header="Клиент"
+                                    Binding="{Binding CustomerFullName}"
+                                    Width="220"/>
+
+                <DataGridTextColumn Header="Тип активности"
+                                    Binding="{Binding ActivityType}"
+                                    Width="160"/>
+
+                <DataGridTextColumn Header="Дата"
+                                    Binding="{Binding ActivityDatetime, StringFormat=dd.MM.yyyy HH:mm}"
+                                    Width="160"/>
+
+                <DataGridTextColumn Header="Описание"
+                                    Binding="{Binding Description}"
+                                    Width="*"/>
+            </DataGrid.Columns>
+        </DataGrid>
+    </Grid>
+</Page>

@@ -1,0 +1,84 @@
+﻿<Page x:Class="LoyaltySystem.Wpf.Pages.CustomerOffersPage"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      Title="CustomerOffersPage">
+
+    <Grid Margin="15">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="10"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="10"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <TextBlock Grid.Row="0"
+                   Text="Персональные предложения"
+                   FontSize="24"
+                   FontWeight="Bold"/>
+
+        <StackPanel Grid.Row="2"
+                    Orientation="Horizontal">
+
+            <Button Content="Назначить"
+                    Width="110"
+                    Height="35"
+                    Margin="0,0,10,0"
+                    Click="AddButton_Click"/>
+
+            <Button Content="Использовано"
+                    Width="120"
+                    Height="35"
+                    Margin="0,0,10,0"
+                    Click="UseButton_Click"/>
+
+            <Button Content="Истекло"
+                    Width="110"
+                    Height="35"
+                    Margin="0,0,10,0"
+                    Click="ExpireButton_Click"/>
+
+            <Button Content="Отменить"
+                    Width="110"
+                    Height="35"
+                    Click="CancelOfferButton_Click"/>
+        </StackPanel>
+
+        <DataGrid x:Name="CustomerOffersDataGrid"
+                  Grid.Row="4"
+                  AutoGenerateColumns="False"
+                  IsReadOnly="True"
+                  SelectionMode="Single"
+                  CanUserAddRows="False"
+                  CanUserDeleteRows="False"
+                  CanUserResizeColumns="True"
+                  CanUserSortColumns="True">
+
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="ID"
+                                    Binding="{Binding OfferId}"
+                                    Width="60"/>
+
+                <DataGridTextColumn Header="Клиент"
+                                    Binding="{Binding CustomerFullName}"
+                                    Width="220"/>
+
+                <DataGridTextColumn Header="Акция"
+                                    Binding="{Binding PromotionName}"
+                                    Width="250"/>
+
+                <DataGridTextColumn Header="Назначено"
+                                    Binding="{Binding AssignedAt, StringFormat=dd.MM.yyyy HH:mm}"
+                                    Width="150"/>
+
+                <DataGridTextColumn Header="Действует до"
+                                    Binding="{Binding ValidUntil, StringFormat=dd.MM.yyyy HH:mm}"
+                                    Width="150"/>
+
+                <DataGridTextColumn Header="Статус"
+                                    Binding="{Binding OfferStatus}"
+                                    Width="130"/>
+            </DataGrid.Columns>
+        </DataGrid>
+    </Grid>
+</Page>

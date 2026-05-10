@@ -1,0 +1,96 @@
+﻿<Page x:Class="LoyaltySystem.Wpf.Pages.TransactionsPage"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      Title="TransactionsPage">    
+    <Grid Margin="15">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="10"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="10"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <TextBlock Grid.Row="0"
+                   Text="Транзакции"
+                   FontSize="24"
+                   FontWeight="Bold"/>
+
+        <StackPanel Grid.Row="2"
+                    Orientation="Horizontal">
+
+            <Button Content="Добавить покупку"
+                    Width="150"
+                    Height="35"
+                    Margin="0,0,10,0"
+                    Click="AddPurchaseButton_Click"/>
+
+            <Button Content="Оформить возврат"
+                    Width="150"
+                    Height="35"
+                    Margin="0,0,10,0"
+                    Click="ReturnTransactionButton_Click"/>
+        </StackPanel>
+
+        <DataGrid x:Name="TransactionsDataGrid"
+                  Grid.Row="4"
+                  AutoGenerateColumns="False"
+                  IsReadOnly="True"
+                  SelectionMode="Single"
+                  CanUserAddRows="False"
+                  CanUserDeleteRows="False"
+                  CanUserResizeColumns="True"
+                  CanUserSortColumns="True">
+
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="ID"
+                                    Binding="{Binding TransactionId}"
+                                    Width="70"/>
+
+                <DataGridTextColumn Header="Тип"
+                                    Binding="{Binding TransactionType}"
+                                    Width="100"/>
+
+                <DataGridTextColumn Header="Исходная покупка"
+                                    Binding="{Binding OriginalTransactionId}"
+                                    Width="120"/>
+
+                <DataGridTextColumn Header="Клиент"
+                                    Binding="{Binding CustomerFullName}"
+                                    Width="220"/>
+
+                <DataGridTextColumn Header="Дата"
+                                    Binding="{Binding TransactionDatetime, StringFormat=dd.MM.yyyy HH:mm}"
+                                    Width="150"/>
+
+                <DataGridTextColumn Header="Сумма"
+                                    Binding="{Binding TransactionAmount, StringFormat=N2}"
+                                    Width="110"/>
+
+                <DataGridTextColumn Header="Списано бонусов"
+                                    Binding="{Binding BonusUsed, StringFormat=N2}"
+                                    Width="130"/>
+
+                <DataGridTextColumn Header="Оплачено"
+                                    Binding="{Binding PaidAmount, StringFormat=N2}"
+                                    Width="110"/>
+
+                <DataGridTextColumn Header="Начислено бонусов"
+                                    Binding="{Binding BonusAccrued, StringFormat=N2}"
+                                    Width="140"/>
+
+                <DataGridTextColumn Header="Канал"
+                                    Binding="{Binding TransactionChannel}"
+                                    Width="100"/>
+
+                <DataGridTextColumn Header="Акция / предложение"
+                                    Binding="{Binding BonusConditionName}"
+                                    Width="220"/>
+
+                <DataGridTextColumn Header="Комментарий"
+                                    Binding="{Binding Comment}"
+                                    Width="*"/>
+            </DataGrid.Columns>
+        </DataGrid>
+    </Grid>
+</Page>

@@ -1,0 +1,94 @@
+﻿<Page x:Class="LoyaltySystem.Wpf.Pages.PromotionsPage"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      Title="PromotionsPage">
+
+    <Grid Margin="15">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="10"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="10"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <TextBlock Grid.Row="0"
+                   Text="Акции"
+                   FontSize="24"
+                   FontWeight="Bold"/>
+
+        <StackPanel Grid.Row="2"
+                    Orientation="Horizontal">
+
+            <Button Content="Добавить"
+                    Width="110"
+                    Height="35"
+                    Margin="0,0,10,0"
+                    Click="AddButton_Click"/>
+
+            <Button Content="Изменить"
+                    Width="110"
+                    Height="35"
+                    Margin="0,0,10,0"
+                    Click="EditButton_Click"/>
+
+            <Button Content="Отключить"
+                    Width="110"
+                    Height="35"
+                    Click="DisableButton_Click"/>
+        </StackPanel>
+
+        <DataGrid x:Name="PromotionsDataGrid"
+                  Grid.Row="4"
+                  AutoGenerateColumns="False"
+                  IsReadOnly="True"
+                  SelectionMode="Single"
+                  CanUserAddRows="False"
+                  CanUserDeleteRows="False"
+                  CanUserResizeColumns="True"
+                  CanUserSortColumns="True">
+
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="ID"
+                                    Binding="{Binding PromotionId}"
+                                    Width="60"/>
+
+                <DataGridTextColumn Header="Название"
+                                    Binding="{Binding PromotionName}"
+                                    Width="220"/>
+
+                <DataGridTextColumn Header="Тип"
+                                    Binding="{Binding PromotionType}"
+                                    Width="140"/>
+
+                <DataGridTextColumn Header="Начало"
+                                    Binding="{Binding StartDate, StringFormat=dd.MM.yyyy}"
+                                    Width="110"/>
+
+                <DataGridTextColumn Header="Окончание"
+                                    Binding="{Binding EndDate, StringFormat=dd.MM.yyyy}"
+                                    Width="110"/>
+
+                <DataGridTextColumn Header="Множитель"
+                                    Binding="{Binding BonusMultiplier, StringFormat=N2}"
+                                    Width="100"/>
+
+                <DataGridTextColumn Header="Доп. бонусы"
+                                    Binding="{Binding ExtraBonus, StringFormat=N2}"
+                                    Width="110"/>
+
+                <DataGridTextColumn Header="Требуемый уровень"
+                                    Binding="{Binding RequiredLevelName}"
+                                    Width="150"/>
+
+                <DataGridTextColumn Header="Статус"
+                                    Binding="{Binding ActivityStatus}"
+                                    Width="100"/>
+
+                <DataGridTextColumn Header="Описание"
+                                    Binding="{Binding Description}"
+                                    Width="*"/>
+            </DataGrid.Columns>
+        </DataGrid>
+    </Grid>
+</Page>

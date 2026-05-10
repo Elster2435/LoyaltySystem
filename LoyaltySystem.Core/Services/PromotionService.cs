@@ -109,6 +109,33 @@ namespace LoyaltySystem.Core.Services
                 .ToList();
         }
 
+        public List<PromotionComboBoxItem> GetActivePersonalOfferPromotionItems()
+        {
+            using var db = DbContextFactory.Create();
+
+            var today = DateTime.Today;
+
+            return db.Promotions
+                .AsNoTracking()
+                .Where(x =>
+                    x.IsActive &&
+                    x.StartDate <= today &&
+                    x.EndDate >= today &&
+                    (
+                        x.PromotionType == PromotionTypeEnum.Personal ||
+                        x.PromotionType == PromotionTypeEnum.Birthday ||
+                        x.PromotionType == PromotionTypeEnum.CustomerReturn ||
+                        x.PromotionType == PromotionTypeEnum.PurchaseReturn
+                    ))
+                .OrderBy(x => x.PromotionName)
+                .Select(x => new PromotionComboBoxItem
+                {
+                    PromotionId = x.PromotionId,
+                    PromotionName = x.PromotionName
+                })
+                .ToList();
+        }
+
         public List<TransactionBonusConditionItem> GetActiveGeneralPromotionsForPurchase(int customerId)
         {
             using var db = DbContextFactory.Create();

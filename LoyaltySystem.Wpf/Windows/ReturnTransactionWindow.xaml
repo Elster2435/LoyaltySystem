@@ -1,0 +1,117 @@
+﻿<Window x:Class="LoyaltySystem.Wpf.Windows.ReturnTransactionWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:LoyaltySystem.Wpf.Windows"
+        Title="Оформление возврата"
+        Height="430"
+        Width="650"
+        WindowStartupLocation="CenterOwner"
+        ResizeMode="NoResize">
+    <Grid Margin="20">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="15"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="10"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="10"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="15"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <TextBlock Grid.Row="0"
+                   Text="Оформление возврата"
+                   FontSize="22"
+                   FontWeight="Bold"/>
+
+        <TextBlock Grid.Row="2"
+                   Text="Выберите покупку, по которой нужно оформить возврат:"/>
+
+        <ComboBox x:Name="OriginalTransactionComboBox"
+                  Grid.Row="4"
+                  DisplayMemberPath="DisplayText"
+                  SelectedValuePath="TransactionId"
+                  SelectionChanged="OriginalTransactionComboBox_SelectionChanged"/>
+
+        <GroupBox Grid.Row="6"
+                  Header="Информация о покупке">
+            <Grid Margin="10">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="180"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="8"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="8"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="8"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="8"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+
+                <TextBlock Grid.Row="0"
+                           Grid.Column="0"
+                           Text="Клиент:"/>
+
+                <TextBlock x:Name="CustomerTextBlock"
+                           Grid.Row="0"
+                           Grid.Column="1"/>
+
+                <TextBlock Grid.Row="2"
+                           Grid.Column="0"
+                           Text="Дата покупки:"/>
+
+                <TextBlock x:Name="DateTextBlock"
+                           Grid.Row="2"
+                           Grid.Column="1"/>
+
+                <TextBlock Grid.Row="4"
+                           Grid.Column="0"
+                           Text="Сумма покупки:"/>
+
+                <TextBlock x:Name="AmountTextBlock"
+                           Grid.Row="4"
+                           Grid.Column="1"/>
+
+                <TextBlock Grid.Row="6"
+                           Grid.Column="0"
+                           Text="Оплачено деньгами:"/>
+
+                <TextBlock x:Name="PaidAmountTextBlock"
+                           Grid.Row="6"
+                           Grid.Column="1"/>
+
+                <TextBlock Grid.Row="8"
+                           Grid.Column="0"
+                           Text="Бонусы:"/>
+
+                <TextBlock x:Name="BonusTextBlock"
+                           Grid.Row="8"
+                           Grid.Column="1"/>
+            </Grid>
+        </GroupBox>
+
+        <StackPanel Grid.Row="8"
+                    Orientation="Horizontal"
+                    HorizontalAlignment="Right">
+
+            <Button Content="Оформить возврат"
+                    Width="140"
+                    Height="35"
+                    Margin="0,0,10,0"
+                    Click="SaveButton_Click"/>
+
+            <Button Content="Отмена"
+                    Width="110"
+                    Height="35"
+                    Click="CancelButton_Click"/>
+        </StackPanel>
+    </Grid>
+</Window>

@@ -1,5 +1,6 @@
 ﻿using LoyaltySystem.Core.DTOs;
 using LoyaltySystem.Core.Enums;
+using LoyaltySystem.Core.Security;
 using LoyaltySystem.Core.Services;
 using LoyaltySystem.Wpf.Helpers;
 using LoyaltySystem.Wpf.Windows;
@@ -21,11 +22,23 @@ namespace LoyaltySystem.Wpf.Pages
         {
             InitializeComponent();
 
+            ApplyAccessPolicy();
+
             DataGridZoomHelper.ApplyDefault(CustomerOffersDataGrid, TableZoomTextBlock);
 
             StatusFilterComboBox.SelectedIndex = 0;
 
             LoadOffers();
+        }
+
+        private void ApplyAccessPolicy()
+        {
+            var canManage = AccessPolicy.CanManageOffers;
+
+            AddOfferButton.Visibility = canManage ? Visibility.Visible : Visibility.Collapsed;
+            UseOfferButton.Visibility = canManage ? Visibility.Visible : Visibility.Collapsed;
+            ExpireOfferButton.Visibility = canManage ? Visibility.Visible : Visibility.Collapsed;
+            CancelOfferButton.Visibility = canManage ? Visibility.Visible : Visibility.Collapsed;
         }
 
         private void LoadOffers()
@@ -52,6 +65,16 @@ namespace LoyaltySystem.Wpf.Pages
 
         private void AddButton_Click(object sender, RoutedEventArgs e)
         {
+            try
+            {
+                AccessPolicy.EnsureCanManageOffers();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message, "Доступ запрещен", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
             var window = new CustomerOfferWindow
             {
                 Owner = Window.GetWindow(this)
@@ -86,6 +109,16 @@ namespace LoyaltySystem.Wpf.Pages
 
         private void ChangeSelectedOfferStatus(OfferStatusEnum status, string confirmationText)
         {
+            try
+            {
+                AccessPolicy.EnsureCanManageOffers();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message, "Доступ запрещен", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
             if (CustomerOffersDataGrid.SelectedItem is not CustomerOfferListItem selectedOffer)
             {
                 MessageBox.Show(

@@ -1,4 +1,5 @@
 ﻿using LoyaltySystem.Core.DTOs;
+using LoyaltySystem.Core.Security;
 using LoyaltySystem.Core.Services;
 using LoyaltySystem.Wpf.Helpers;
 using LoyaltySystem.Wpf.Windows;
@@ -20,12 +21,22 @@ namespace LoyaltySystem.Wpf.Pages
         {
             InitializeComponent();
 
+            ApplyAccessPolicy();
+
             DataGridZoomHelper.ApplyDefault(TransactionsDataGrid, TableZoomTextBlock);
 
             TransactionTypeFilterComboBox.SelectedIndex = 0;
             ChannelFilterComboBox.SelectedIndex = 0;
 
             LoadTransactions();
+        }
+
+        private void ApplyAccessPolicy()
+        {
+            var canManage = AccessPolicy.CanManageTransactions;
+
+            AddPurchaseButton.Visibility = canManage ? Visibility.Visible : Visibility.Collapsed;
+            ReturnTransactionButton.Visibility = canManage ? Visibility.Visible : Visibility.Collapsed;
         }
 
         private void LoadTransactions()
@@ -52,6 +63,16 @@ namespace LoyaltySystem.Wpf.Pages
 
         private void AddPurchaseButton_Click(object sender, RoutedEventArgs e)
         {
+            try
+            {
+                AccessPolicy.EnsureCanManageTransactions();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message, "Доступ запрещен", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
             var window = new PurchaseWindow
             {
                 Owner = Window.GetWindow(this)
@@ -65,6 +86,16 @@ namespace LoyaltySystem.Wpf.Pages
 
         private void ReturnTransactionButton_Click(object sender, RoutedEventArgs e)
         {
+            try
+            {
+                AccessPolicy.EnsureCanManageTransactions();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message, "Доступ запрещен", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
             var window = new ReturnTransactionWindow
             {
                 Owner = Window.GetWindow(this)

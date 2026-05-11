@@ -1,4 +1,5 @@
 ﻿using LoyaltySystem.Core.DTOs;
+using LoyaltySystem.Core.Security;
 using LoyaltySystem.Core.Services;
 using LoyaltySystem.Wpf.Helpers;
 using LoyaltySystem.Wpf.Windows;
@@ -20,11 +21,22 @@ namespace LoyaltySystem.Wpf.Pages
         {
             InitializeComponent();
 
+            ApplyAccessPolicy();
+
             DataGridZoomHelper.ApplyDefault(PromotionsDataGrid, TableZoomTextBlock);
 
             PromotionTypeFilterComboBox.SelectedIndex = 0;
 
             LoadPromotions();
+        }
+
+        private void ApplyAccessPolicy()
+        {
+            var canManage = AccessPolicy.CanManagePromotions;
+
+            AddPromotionButton.Visibility = canManage ? Visibility.Visible : Visibility.Collapsed;
+            EditPromotionButton.Visibility = canManage ? Visibility.Visible : Visibility.Collapsed;
+            DisablePromotionButton.Visibility = canManage ? Visibility.Visible : Visibility.Collapsed;
         }
 
         private void LoadPromotions()
@@ -53,6 +65,16 @@ namespace LoyaltySystem.Wpf.Pages
 
         private void AddButton_Click(object sender, RoutedEventArgs e)
         {
+            try
+            {
+                AccessPolicy.EnsureCanManagePromotions();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message, "Доступ запрещен", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
             var window = new PromotionWindow
             {
                 Owner = Window.GetWindow(this)
@@ -66,6 +88,16 @@ namespace LoyaltySystem.Wpf.Pages
 
         private void EditButton_Click(object sender, RoutedEventArgs e)
         {
+            try
+            {
+                AccessPolicy.EnsureCanManagePromotions();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message, "Доступ запрещен", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
             if (PromotionsDataGrid.SelectedItem is not PromotionListItem selectedPromotion)
             {
                 MessageBox.Show(
@@ -90,6 +122,16 @@ namespace LoyaltySystem.Wpf.Pages
 
         private void DisableButton_Click(object sender, RoutedEventArgs e)
         {
+            try
+            {
+                AccessPolicy.EnsureCanManagePromotions();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message, "Доступ запрещен", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
             if (PromotionsDataGrid.SelectedItem is not PromotionListItem selectedPromotion)
             {
                 MessageBox.Show(

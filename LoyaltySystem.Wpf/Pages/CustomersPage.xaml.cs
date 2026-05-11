@@ -1,5 +1,6 @@
 ﻿using LoyaltySystem.Core.DTOs;
 using LoyaltySystem.Core.Entities;
+using LoyaltySystem.Core.Security;
 using LoyaltySystem.Core.Services;
 using LoyaltySystem.Wpf.Helpers;
 using LoyaltySystem.Wpf.Windows;
@@ -22,6 +23,8 @@ namespace LoyaltySystem.Wpf.Pages
         {
             InitializeComponent();
 
+            ApplyAccessPolicy();
+
             DataGridZoomHelper.ApplyDefault(CustomersDataGrid, TableZoomTextBlock);
 
             LoadLevelFilter();
@@ -30,6 +33,15 @@ namespace LoyaltySystem.Wpf.Pages
             LevelFilterComboBox.SelectedIndex = 0;
 
             LoadCustomers();
+        }
+
+        private void ApplyAccessPolicy()
+        {
+            var canManage = AccessPolicy.CanManageCustomers;
+
+            AddCustomerButton.Visibility = canManage ? Visibility.Visible : Visibility.Collapsed;
+            EditCustomerButton.Visibility = canManage ? Visibility.Visible : Visibility.Collapsed;
+            DeleteCustomerButton.Visibility = canManage ? Visibility.Visible : Visibility.Collapsed;
         }
 
         private void LoadCustomers()
@@ -56,6 +68,16 @@ namespace LoyaltySystem.Wpf.Pages
 
         private void AddButton_Click(object sender, RoutedEventArgs e)
         {
+            try
+            {
+                AccessPolicy.EnsureCanManageCustomers();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message, "Доступ запрещен", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
             var window = new CustomerWindow
             {
                 Owner = Window.GetWindow(this)
@@ -69,6 +91,16 @@ namespace LoyaltySystem.Wpf.Pages
 
         private void EditButton_Click(object sender, RoutedEventArgs e)
         {
+            try
+            {
+                AccessPolicy.EnsureCanManageCustomers();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message, "Доступ запрещен", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
             if (CustomersDataGrid.SelectedItem is not CustomerListItem selectedCustomer)
             {
                 MessageBox.Show(
@@ -93,6 +125,16 @@ namespace LoyaltySystem.Wpf.Pages
 
         private void DeleteButton_Click(object sender, RoutedEventArgs e)
         {
+            try
+            {
+                AccessPolicy.EnsureCanManageCustomers();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message, "Доступ запрещен", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
             if (CustomersDataGrid.SelectedItem is not CustomerListItem selectedCustomer)
             {
                 MessageBox.Show(

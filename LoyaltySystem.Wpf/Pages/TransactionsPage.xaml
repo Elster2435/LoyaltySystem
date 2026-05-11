@@ -119,13 +119,15 @@
             <StackPanel Grid.Column="0"
                         Orientation="Horizontal">
 
-                <Button Content="Добавить покупку"
+                <Button x:Name="AddPurchaseButton"
+                        Content="Добавить покупку"
                         Width="150"
                         Height="35"
                         Margin="0,0,10,0"
                         Click="AddPurchaseButton_Click"/>
 
-                <Button Content="Оформить возврат"
+                <Button x:Name="ReturnTransactionButton"
+                        Content="Оформить возврат"
                         Width="150"
                         Height="35"
                         Margin="0,0,10,0"

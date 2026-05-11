@@ -92,19 +92,22 @@
             <StackPanel Grid.Column="0"
                         Orientation="Horizontal">
 
-                <Button Content="Добавить"
+                <Button x:Name="AddPromotionButton"
+                        Content="Добавить"
                         Width="110"
                         Height="35"
                         Margin="0,0,10,0"
                         Click="AddButton_Click"/>
 
-                <Button Content="Изменить"
+                <Button x:Name="EditPromotionButton"
+                        Content="Изменить"
                         Width="110"
                         Height="35"
                         Margin="0,0,10,0"
                         Click="EditButton_Click"/>
 
-                <Button Content="Отключить"
+                <Button x:Name="DisablePromotionButton"
+                        Content="Отключить"
                         Width="110"
                         Height="35"
                         Click="DisableButton_Click"/>

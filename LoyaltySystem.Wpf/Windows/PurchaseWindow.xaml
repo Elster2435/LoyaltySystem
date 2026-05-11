@@ -55,7 +55,12 @@
                       Grid.Column="1"
                       DisplayMemberPath="DisplayText"
                       SelectedValuePath="CustomerId"
-                      SelectionChanged="CustomerComboBox_SelectionChanged"/>
+                      IsEditable="True"
+                      IsTextSearchEnabled="False"
+                      StaysOpenOnEdit="True"
+                      SelectionChanged="CustomerComboBox_SelectionChanged"
+                      KeyUp="CustomerComboBox_KeyUp"
+                      PreviewTextInput="CustomerComboBox_PreviewTextInput"/>
 
             <TextBlock Grid.Row="2"
                        Grid.Column="0"
@@ -111,7 +116,12 @@
                       Grid.Row="10"
                       Grid.Column="1"
                       DisplayMemberPath="DisplayText"
-                      SelectedValuePath="Id"/>
+                      SelectedValuePath="Id"
+                      IsEditable="True"
+                      IsTextSearchEnabled="False"
+                      StaysOpenOnEdit="True"
+                      KeyUp="BonusConditionComboBox_KeyUp"
+                      PreviewTextInput="BonusConditionComboBox_PreviewTextInput"/>
 
             <TextBlock Grid.Row="12"
                        Grid.Column="0"

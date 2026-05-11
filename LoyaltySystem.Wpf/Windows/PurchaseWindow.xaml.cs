@@ -1,9 +1,13 @@
-﻿using LoyaltySystem.Core.Entities;
+﻿using LoyaltySystem.Core.DTOs;
+using LoyaltySystem.Core.Entities;
 using LoyaltySystem.Core.Enums;
 using LoyaltySystem.Core.Services;
+using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Globalization;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Data;
 
 namespace LoyaltySystem.Wpf.Windows
 {
@@ -13,6 +17,10 @@ namespace LoyaltySystem.Wpf.Windows
         private readonly PromotionService _promotionService = new();
         private readonly CustomerOfferService _customerOfferService = new();
         private readonly TransactionService _transactionService = new();
+        private ObservableCollection<CustomerComboBoxItem> _customers = new();
+        private ICollectionView? _customersView;
+        private ObservableCollection<TransactionBonusConditionItem> _bonusConditions = new();
+        private ICollectionView? _bonusConditionsView;
 
         public PurchaseWindow()
         {
@@ -27,12 +35,49 @@ namespace LoyaltySystem.Wpf.Windows
 
         private void LoadCustomers()
         {
-            CustomerComboBox.ItemsSource = _customerService.GetComboBoxItems();
+            _customers = new ObservableCollection<CustomerComboBoxItem>(
+                _customerService.GetComboBoxItems());
+
+            _customersView = CollectionViewSource.GetDefaultView(_customers);
+            _customersView.Filter = FilterCustomers;
+
+            CustomerComboBox.ItemsSource = _customersView;
+        }
+
+        private bool FilterCustomers(object item)
+        {
+            if (item is not CustomerComboBoxItem customer)
+                return false;
+
+            var searchText = CustomerComboBox.Text?.Trim();
+
+            if (string.IsNullOrWhiteSpace(searchText))
+                return true;
+
+            return customer.DisplayText.Contains(
+                searchText,
+                StringComparison.OrdinalIgnoreCase);
+        }
+
+        private void CustomerComboBox_KeyUp(object sender, System.Windows.Input.KeyEventArgs e)
+        {
+            _customersView?.Refresh();
+
+            if (!CustomerComboBox.IsDropDownOpen)
+                CustomerComboBox.IsDropDownOpen = true;
+        }
+
+        private void CustomerComboBox_PreviewTextInput(object sender, System.Windows.Input.TextCompositionEventArgs e)
+        {
+            CustomerComboBox.IsDropDownOpen = true;
         }
 
         private void CustomerComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            LoadBonusConditions();
+            if (CustomerComboBox.SelectedValue is int)
+            {
+                LoadBonusConditions();
+            }
         }
 
         private void BonusConditionTypeComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -43,27 +88,61 @@ namespace LoyaltySystem.Wpf.Windows
         private void LoadBonusConditions()
         {
             BonusConditionComboBox.ItemsSource = null;
+            BonusConditionComboBox.Text = string.Empty;
             BonusConditionComboBox.IsEnabled = false;
 
             if (CustomerComboBox.SelectedValue is not int customerId)
                 return;
 
-            var conditionType = GetSelectedComboBoxText(BonusConditionTypeComboBox);
+            if (BonusConditionTypeComboBox.SelectedIndex <= 0)
+                return;
 
-            if (conditionType == "Общая акция")
+            List<TransactionBonusConditionItem> items;
+
+            if (BonusConditionTypeComboBox.SelectedIndex == 1)
             {
-                var promotions = _promotionService.GetActiveGeneralPromotionsForPurchase(customerId);
-
-                BonusConditionComboBox.ItemsSource = promotions;
-                BonusConditionComboBox.IsEnabled = promotions.Count > 0;
+                items = _promotionService.GetActiveGeneralPromotionsForPurchase(customerId);
             }
-            else if (conditionType == "Персональное предложение")
+            else
             {
-                var offers = _customerOfferService.GetAvailableOffersForPurchase(customerId);
-
-                BonusConditionComboBox.ItemsSource = offers;
-                BonusConditionComboBox.IsEnabled = offers.Count > 0;
+                items = _customerOfferService.GetAvailableOffersForPurchase(customerId);
             }
+
+            _bonusConditions = new ObservableCollection<TransactionBonusConditionItem>(items);
+
+            _bonusConditionsView = CollectionViewSource.GetDefaultView(_bonusConditions);
+            _bonusConditionsView.Filter = FilterBonusConditions;
+
+            BonusConditionComboBox.ItemsSource = _bonusConditionsView;
+            BonusConditionComboBox.IsEnabled = true;
+        }
+
+        private bool FilterBonusConditions(object item)
+        {
+            if (item is not TransactionBonusConditionItem condition)
+                return false;
+
+            var searchText = BonusConditionComboBox.Text?.Trim();
+
+            if (string.IsNullOrWhiteSpace(searchText))
+                return true;
+
+            return condition.DisplayText.Contains(
+                searchText,
+                StringComparison.OrdinalIgnoreCase);
+        }
+
+        private void BonusConditionComboBox_KeyUp(object sender, System.Windows.Input.KeyEventArgs e)
+        {
+            _bonusConditionsView?.Refresh();
+
+            if (!BonusConditionComboBox.IsDropDownOpen)
+                BonusConditionComboBox.IsDropDownOpen = true;
+        }
+
+        private void BonusConditionComboBox_PreviewTextInput(object sender, System.Windows.Input.TextCompositionEventArgs e)
+        {
+            BonusConditionComboBox.IsDropDownOpen = true;
         }
 
         private void SaveButton_Click(object sender, RoutedEventArgs e)

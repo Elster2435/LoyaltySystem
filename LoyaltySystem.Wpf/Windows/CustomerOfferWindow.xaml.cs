@@ -1,7 +1,11 @@
-﻿using LoyaltySystem.Core.Entities;
+﻿using LoyaltySystem.Core.DTOs;
+using LoyaltySystem.Core.Entities;
 using LoyaltySystem.Core.Enums;
 using LoyaltySystem.Core.Services;
+using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Windows;
+using System.Windows.Data;
 
 namespace LoyaltySystem.Wpf.Windows
 {
@@ -10,6 +14,10 @@ namespace LoyaltySystem.Wpf.Windows
         private readonly CustomerService _customerService = new();
         private readonly PromotionService _promotionService = new();
         private readonly CustomerOfferService _customerOfferService = new();
+        private ObservableCollection<CustomerComboBoxItem> _customers = new();
+        private ICollectionView? _customersView;
+        private ObservableCollection<PromotionComboBoxItem> _promotions = new();
+        private ICollectionView? _promotionsView;
 
         public CustomerOfferWindow()
         {
@@ -23,12 +31,80 @@ namespace LoyaltySystem.Wpf.Windows
 
         private void LoadCustomers()
         {
-            CustomerComboBox.ItemsSource = _customerService.GetComboBoxItems();
+            _customers = new ObservableCollection<CustomerComboBoxItem>(
+                _customerService.GetComboBoxItems());
+
+            _customersView = CollectionViewSource.GetDefaultView(_customers);
+            _customersView.Filter = FilterCustomers;
+
+            CustomerComboBox.ItemsSource = _customersView;
+        }
+
+        private bool FilterCustomers(object item)
+        {
+            if (item is not CustomerComboBoxItem customer)
+                return false;
+
+            var searchText = CustomerComboBox.Text?.Trim();
+
+            if (string.IsNullOrWhiteSpace(searchText))
+                return true;
+
+            return customer.DisplayText.Contains(
+                searchText,
+                StringComparison.OrdinalIgnoreCase);
+        }
+
+        private void CustomerComboBox_KeyUp(object sender, System.Windows.Input.KeyEventArgs e)
+        {
+            _customersView?.Refresh();
+
+            if (!CustomerComboBox.IsDropDownOpen)
+                CustomerComboBox.IsDropDownOpen = true;
+        }
+
+        private void CustomerComboBox_PreviewTextInput(object sender, System.Windows.Input.TextCompositionEventArgs e)
+        {
+            CustomerComboBox.IsDropDownOpen = true;
         }
 
         private void LoadPromotions()
         {
-            PromotionComboBox.ItemsSource = _promotionService.GetActivePersonalOfferPromotionItems();
+            _promotions = new ObservableCollection<PromotionComboBoxItem>(
+                _promotionService.GetActivePersonalOfferPromotionItems());
+
+            _promotionsView = CollectionViewSource.GetDefaultView(_promotions);
+            _promotionsView.Filter = FilterPromotions;
+
+            PromotionComboBox.ItemsSource = _promotionsView;
+        }
+
+        private void PromotionComboBox_KeyUp(object sender, System.Windows.Input.KeyEventArgs e)
+        {
+            _promotionsView?.Refresh();
+
+            if (!PromotionComboBox.IsDropDownOpen)
+                PromotionComboBox.IsDropDownOpen = true;
+        }
+
+        private void PromotionComboBox_PreviewTextInput(object sender, System.Windows.Input.TextCompositionEventArgs e)
+        {
+            PromotionComboBox.IsDropDownOpen = true;
+        }
+
+        private bool FilterPromotions(object item)
+        {
+            if (item is not PromotionComboBoxItem promotion)
+                return false;
+
+            var searchText = PromotionComboBox.Text?.Trim();
+
+            if (string.IsNullOrWhiteSpace(searchText))
+                return true;
+
+            return promotion.DisplayText.Contains(
+                searchText,
+                StringComparison.OrdinalIgnoreCase);
         }
 
         private void SaveButton_Click(object sender, RoutedEventArgs e)

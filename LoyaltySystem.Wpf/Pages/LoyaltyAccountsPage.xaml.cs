@@ -1,5 +1,6 @@
 ﻿using LoyaltySystem.Core.DTOs;
 using LoyaltySystem.Core.Services;
+using LoyaltySystem.Wpf.Helpers;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Windows;
@@ -17,6 +18,8 @@ namespace LoyaltySystem.Wpf.Pages
         public LoyaltyAccountsPage()
         {
             InitializeComponent();
+
+            DataGridZoomHelper.ApplyDefault(LoyaltyAccountsDataGrid, TableZoomTextBlock);
 
             LoadLevelFilter();
 
@@ -155,6 +158,21 @@ namespace LoyaltySystem.Wpf.Pages
             StatusFilterComboBox.SelectedIndex = 0;
 
             RefreshFilter();
+        }
+
+        private void DecreaseTableZoomButton_Click(object sender, RoutedEventArgs e)
+        {
+            DataGridZoomHelper.Decrease(LoyaltyAccountsDataGrid, TableZoomTextBlock);
+        }
+
+        private void IncreaseTableZoomButton_Click(object sender, RoutedEventArgs e)
+        {
+            DataGridZoomHelper.Increase(LoyaltyAccountsDataGrid, TableZoomTextBlock);
+        }
+
+        private void ResetTableZoomButton_Click(object sender, RoutedEventArgs e)
+        {
+            DataGridZoomHelper.Reset(LoyaltyAccountsDataGrid, TableZoomTextBlock);
         }
     }
 }

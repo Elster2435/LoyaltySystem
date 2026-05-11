@@ -1,5 +1,6 @@
 ﻿using LoyaltySystem.Core.DTOs;
 using LoyaltySystem.Core.Services;
+using LoyaltySystem.Wpf.Helpers;
 using LoyaltySystem.Wpf.Windows;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
@@ -18,6 +19,8 @@ namespace LoyaltySystem.Wpf.Pages
         public TransactionsPage()
         {
             InitializeComponent();
+
+            DataGridZoomHelper.ApplyDefault(TransactionsDataGrid, TableZoomTextBlock);
 
             TransactionTypeFilterComboBox.SelectedIndex = 0;
             ChannelFilterComboBox.SelectedIndex = 0;
@@ -185,6 +188,21 @@ namespace LoyaltySystem.Wpf.Pages
             EndDatePicker.SelectedDate = null;
 
             RefreshFilter();
+        }
+
+        private void DecreaseTableZoomButton_Click(object sender, RoutedEventArgs e)
+        {
+            DataGridZoomHelper.Decrease(TransactionsDataGrid, TableZoomTextBlock);
+        }
+
+        private void IncreaseTableZoomButton_Click(object sender, RoutedEventArgs e)
+        {
+            DataGridZoomHelper.Increase(TransactionsDataGrid, TableZoomTextBlock);
+        }
+
+        private void ResetTableZoomButton_Click(object sender, RoutedEventArgs e)
+        {
+            DataGridZoomHelper.Reset(TransactionsDataGrid, TableZoomTextBlock);
         }
     }
 }

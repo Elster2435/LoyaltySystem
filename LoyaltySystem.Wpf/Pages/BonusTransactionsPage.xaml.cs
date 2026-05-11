@@ -1,5 +1,6 @@
 ﻿using LoyaltySystem.Core.DTOs;
 using LoyaltySystem.Core.Services;
+using LoyaltySystem.Wpf.Helpers;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Windows;
@@ -17,6 +18,8 @@ namespace LoyaltySystem.Wpf.Pages
         public BonusTransactionsPage()
         {
             InitializeComponent();
+
+            DataGridZoomHelper.ApplyDefault(BonusTransactionsDataGrid, TableZoomTextBlock);
 
             BonusTypeFilterComboBox.SelectedIndex = 0;
 
@@ -135,6 +138,21 @@ namespace LoyaltySystem.Wpf.Pages
             EndDatePicker.SelectedDate = null;
 
             RefreshFilter();
+        }
+
+        private void DecreaseTableZoomButton_Click(object sender, RoutedEventArgs e)
+        {
+            DataGridZoomHelper.Decrease(BonusTransactionsDataGrid, TableZoomTextBlock);
+        }
+
+        private void IncreaseTableZoomButton_Click(object sender, RoutedEventArgs e)
+        {
+            DataGridZoomHelper.Increase(BonusTransactionsDataGrid, TableZoomTextBlock);
+        }
+
+        private void ResetTableZoomButton_Click(object sender, RoutedEventArgs e)
+        {
+            DataGridZoomHelper.Reset(BonusTransactionsDataGrid, TableZoomTextBlock);
         }
     }
 }

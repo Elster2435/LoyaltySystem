@@ -95,32 +95,71 @@
                     Click="ResetFilterButton_Click"/>
         </Grid>
 
-        <StackPanel Grid.Row="4"
-                    Orientation="Horizontal">
+        <Grid Grid.Row="4">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
 
-            <Button Content="Назначить"
-                    Width="110"
-                    Height="35"
-                    Margin="0,0,10,0"
-                    Click="AddButton_Click"/>
+            <StackPanel Grid.Column="0"
+                        Orientation="Horizontal">
 
-            <Button Content="Использовано"
-                    Width="120"
-                    Height="35"
-                    Margin="0,0,10,0"
-                    Click="UseButton_Click"/>
+                <Button Content="Назначить"
+                        Width="110"
+                        Height="35"
+                        Margin="0,0,10,0"
+                        Click="AddButton_Click"/>
 
-            <Button Content="Истекло"
-                    Width="110"
-                    Height="35"
-                    Margin="0,0,10,0"
-                    Click="ExpireButton_Click"/>
+                <Button Content="Использовано"
+                        Width="120"
+                        Height="35"
+                        Margin="0,0,10,0"
+                        Click="UseButton_Click"/>
 
-            <Button Content="Отменить"
-                    Width="110"
-                    Height="35"
-                    Click="CancelOfferButton_Click"/>
-        </StackPanel>
+                <Button Content="Истекло"
+                        Width="110"
+                        Height="35"
+                        Margin="0,0,10,0"
+                        Click="ExpireButton_Click"/>
+
+                <Button Content="Отменить"
+                        Width="110"
+                        Height="35"
+                        Click="CancelOfferButton_Click"/>
+            </StackPanel>
+
+            <StackPanel Grid.Column="1"
+                        Orientation="Horizontal"
+                        VerticalAlignment="Center">
+
+                <TextBlock Text="Масштаб таблицы:"
+                           VerticalAlignment="Center"
+                           Margin="0,0,8,0"/>
+
+                <Button Content="A-"
+                        Width="45"
+                        Height="30"
+                        Margin="0,0,5,0"
+                        Click="DecreaseTableZoomButton_Click"/>
+
+                <TextBlock x:Name="TableZoomTextBlock"
+                           Text="100%"
+                           Width="50"
+                           VerticalAlignment="Center"
+                           TextAlignment="Center"/>
+
+                <Button Content="A+"
+                        Width="45"
+                        Height="30"
+                        Margin="5,0,5,0"
+                        Click="IncreaseTableZoomButton_Click"/>
+
+                <Button Content="100%"
+                        Width="55"
+                        Height="30"
+                        Click="ResetTableZoomButton_Click"/>
+            </StackPanel>
+        </Grid>
 
         <DataGrid x:Name="CustomerOffersDataGrid"
                   Grid.Row="6"

@@ -1,6 +1,7 @@
 ﻿using LoyaltySystem.Core.DTOs;
 using LoyaltySystem.Core.Enums;
 using LoyaltySystem.Core.Services;
+using LoyaltySystem.Wpf.Helpers;
 using LoyaltySystem.Wpf.Windows;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
@@ -19,6 +20,8 @@ namespace LoyaltySystem.Wpf.Pages
         public CustomerOffersPage()
         {
             InitializeComponent();
+
+            DataGridZoomHelper.ApplyDefault(CustomerOffersDataGrid, TableZoomTextBlock);
 
             StatusFilterComboBox.SelectedIndex = 0;
 
@@ -209,6 +212,21 @@ namespace LoyaltySystem.Wpf.Pages
             EndDatePicker.SelectedDate = null;
 
             RefreshFilter();
+        }
+
+        private void DecreaseTableZoomButton_Click(object sender, RoutedEventArgs e)
+        {
+            DataGridZoomHelper.Decrease(CustomerOffersDataGrid, TableZoomTextBlock);
+        }
+
+        private void IncreaseTableZoomButton_Click(object sender, RoutedEventArgs e)
+        {
+            DataGridZoomHelper.Increase(CustomerOffersDataGrid, TableZoomTextBlock);
+        }
+
+        private void ResetTableZoomButton_Click(object sender, RoutedEventArgs e)
+        {
+            DataGridZoomHelper.Reset(CustomerOffersDataGrid, TableZoomTextBlock);
         }
     }
 }

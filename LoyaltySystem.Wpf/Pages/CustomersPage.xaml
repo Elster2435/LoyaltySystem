@@ -102,11 +102,25 @@
                         Margin="0,0,10,0"
                         Click="EditButton_Click"/>
 
+                <Button x:Name="ActivateCustomerButton"
+                        Content="Активировать"
+                        Width="120"
+                        Height="35"
+                        Margin="0,0,10,0"
+                        Click="ActivateButton_Click"/>
+
                 <Button x:Name="DeleteCustomerButton"
                         Content="Деактивировать"
                         Width="130"
                         Height="35"
+                        Margin="0,0,10,0"
                         Click="DeleteButton_Click"/>
+
+                <Button x:Name="BlockCustomerButton"
+                        Content="Заблокировать"
+                        Width="130"
+                        Height="35"
+                        Click="BlockButton_Click"/>
             </StackPanel>
 
             <StackPanel Grid.Column="1"

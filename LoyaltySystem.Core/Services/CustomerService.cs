@@ -105,24 +105,25 @@ namespace LoyaltySystem.Core.Services
             existingCustomer.Email = customer.Email;
             existingCustomer.BirthDate = customer.BirthDate;
             existingCustomer.Gender = customer.Gender;
-            existingCustomer.Status = customer.Status;
+            if (existingCustomer.Status != customer.Status)
+            {
+                UpdateCustomerAndAccountStatus(db, existingCustomer.CustomerId, customer.Status);
+            }
+
+            db.CustomerActivities.Add(new CustomerActivity
+            {
+                CustomerId = existingCustomer.CustomerId,
+                ActivityType = ActivityTypeEnum.ProfileChanged,
+                ActivityDatetime = DateTime.SpecifyKind(DateTime.Now, DateTimeKind.Unspecified),
+                Description = "Изменены данные профиля клиента."
+            });
 
             db.SaveChanges();
         }
 
         public void Delete(int customerId)
         {
-            using var db = DbContextFactory.Create();
-
-            var customer = db.Customers
-                .FirstOrDefault(x => x.CustomerId == customerId);
-
-            if (customer == null)
-                throw new InvalidOperationException("Клиент не найден.");
-
-            customer.Status = StatusEnum.Inactive;
-
-            db.SaveChanges();
+            SetStatus(customerId, StatusEnum.Inactive);
         }
 
         private static string BuildFullName(string lastName, string firstName, string? middleName)
@@ -130,6 +131,67 @@ namespace LoyaltySystem.Core.Services
             return string.IsNullOrWhiteSpace(middleName)
                 ? $"{lastName} {firstName}"
                 : $"{lastName} {firstName} {middleName}";
+        }
+
+        public void SetStatus(int customerId, StatusEnum status)
+        {
+            using var db = DbContextFactory.Create();
+
+            var customer = db.Customers
+                .FirstOrDefault(x => x.CustomerId == customerId);
+
+            if (customer == null)
+                throw new Exception("Клиент не найден.");
+
+            if (customer.Status == status)
+                throw new Exception($"Клиент уже имеет статус \"{GetStatusDisplayName(status)}\".");
+
+            UpdateCustomerAndAccountStatus(db, customerId, status);
+
+            customer.UpdatedAt = DateTime.SpecifyKind(DateTime.Now, DateTimeKind.Unspecified);
+
+            db.CustomerActivities.Add(new CustomerActivity
+            {
+                CustomerId = customerId,
+                ActivityType = ActivityTypeEnum.ProfileChanged,
+                ActivityDatetime = DateTime.SpecifyKind(DateTime.Now, DateTimeKind.Unspecified),
+                Description = $"Изменен статус клиента на \"{GetStatusDisplayName(status)}\"."
+            });
+
+            db.SaveChanges();
+        }
+
+        private static void UpdateCustomerAndAccountStatus(
+            ApplicationDbContext db,
+            int customerId,
+            StatusEnum status)
+        {
+            var customer = db.Customers
+                .FirstOrDefault(x => x.CustomerId == customerId);
+
+            if (customer == null)
+                throw new Exception("Клиент не найден.");
+
+            customer.Status = status;
+
+            var account = db.CustomerLoyaltyAccounts
+                .FirstOrDefault(x => x.CustomerId == customerId);
+
+            if (account != null)
+            {
+                account.AccountStatus = status;
+            }
+        }
+
+        private static string GetStatusDisplayName(StatusEnum status)
+        {
+            return status switch
+            {
+                StatusEnum.Active => "Активный",
+                StatusEnum.Inactive => "Неактивный",
+                StatusEnum.Blocked => "Заблокирован",
+                _ => status.ToString()
+            };
         }
     }
 }

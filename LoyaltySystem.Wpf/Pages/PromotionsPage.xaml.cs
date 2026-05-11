@@ -36,6 +36,7 @@ namespace LoyaltySystem.Wpf.Pages
 
             AddPromotionButton.Visibility = canManage ? Visibility.Visible : Visibility.Collapsed;
             EditPromotionButton.Visibility = canManage ? Visibility.Visible : Visibility.Collapsed;
+            EnablePromotionButton.Visibility = canManage ? Visibility.Visible : Visibility.Collapsed;
             DisablePromotionButton.Visibility = canManage ? Visibility.Visible : Visibility.Collapsed;
         }
 
@@ -120,7 +121,17 @@ namespace LoyaltySystem.Wpf.Pages
             }
         }
 
+        private void EnableButton_Click(object sender, RoutedEventArgs e)
+        {
+            ChangePromotionActiveStatus(true, "включить");
+        }
+
         private void DisableButton_Click(object sender, RoutedEventArgs e)
+        {
+            ChangePromotionActiveStatus(false, "отключить");
+        }
+
+        private void ChangePromotionActiveStatus(bool isActive, string actionText)
         {
             try
             {
@@ -128,14 +139,19 @@ namespace LoyaltySystem.Wpf.Pages
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.Message, "Доступ запрещен", MessageBoxButton.OK, MessageBoxImage.Warning);
+                MessageBox.Show(
+                    ex.Message,
+                    "Доступ запрещен",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Warning);
+
                 return;
             }
 
             if (PromotionsDataGrid.SelectedItem is not PromotionListItem selectedPromotion)
             {
                 MessageBox.Show(
-                    "Выберите акцию для отключения.",
+                    "Выберите акцию.",
                     "Проверка данных",
                     MessageBoxButton.OK,
                     MessageBoxImage.Warning);
@@ -143,8 +159,23 @@ namespace LoyaltySystem.Wpf.Pages
                 return;
             }
 
+            var currentIsActive = selectedPromotion.ActivityStatus == "Активна";
+
+            if (currentIsActive == isActive)
+            {
+                var statusText = isActive ? "активна" : "отключена";
+
+                MessageBox.Show(
+                    $"Акция уже {statusText}.",
+                    "Проверка данных",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Information);
+
+                return;
+            }
+
             var result = MessageBox.Show(
-                $"Отключить акцию \"{selectedPromotion.PromotionName}\"?",
+                $"Вы действительно хотите {actionText} акцию \"{selectedPromotion.PromotionName}\"?",
                 "Подтверждение",
                 MessageBoxButton.YesNo,
                 MessageBoxImage.Question);
@@ -154,14 +185,17 @@ namespace LoyaltySystem.Wpf.Pages
 
             try
             {
-                _promotionService.Disable(selectedPromotion.PromotionId);
+                if (isActive)
+                    _promotionService.Enable(selectedPromotion.PromotionId);
+                else
+                    _promotionService.Disable(selectedPromotion.PromotionId);
 
                 LoadPromotions();
             }
             catch (Exception ex)
             {
                 MessageBox.Show(
-                    $"Не удалось отключить акцию.\n\n{ex.Message}",
+                    $"Не удалось изменить статус акции.\n\n{ex.Message}",
                     "Ошибка",
                     MessageBoxButton.OK,
                     MessageBoxImage.Error);

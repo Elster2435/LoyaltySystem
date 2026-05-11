@@ -130,6 +130,17 @@ namespace LoyaltySystem.Wpf.Pages
                 return;
             }
 
+            if (selectedOffer.OfferStatus != "Назначено")
+            {
+                MessageBox.Show(
+                    "Изменять статус вручную можно только у предложений со статусом \"Назначено\".",
+                    "Проверка данных",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Warning);
+
+                return;
+            }
+
             var result = MessageBox.Show(
                 confirmationText,
                 "Подтверждение",

@@ -231,6 +231,12 @@ namespace LoyaltySystem.Core.Services
             if (user == null)
                 throw new Exception("Пользователь не найден.");
 
+            if (user.IsActive == isActive)
+            {
+                var statusText = isActive ? "активен" : "отключен";
+                throw new Exception($"Пользователь уже {statusText}.");
+            }
+
             if (!isActive && user.Role?.RoleName == RoleNameEnum.Administrator)
             {
                 EnsureCanRemoveAdministratorRights(db, user.UserId);

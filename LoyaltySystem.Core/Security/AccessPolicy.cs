@@ -16,6 +16,9 @@ namespace LoyaltySystem.Core.Security
         public static bool CanManageCustomers =>
             IsAdministrator || IsManager;
 
+        public static bool CanBlockCustomers =>
+            IsAdministrator;
+
         public static bool CanManageTransactions =>
             IsAdministrator || IsManager;
 
@@ -41,6 +44,12 @@ namespace LoyaltySystem.Core.Security
         {
             if (!CanManageCustomers)
                 throw new Exception("Недостаточно прав для управления клиентами.");
+        }
+
+        public static void EnsureCanBlockCustomers()
+        {
+            if (!CanBlockCustomers)
+                throw new Exception("Недостаточно прав для блокировки клиентов.");
         }
 
         public static void EnsureCanManageTransactions()

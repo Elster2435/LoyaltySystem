@@ -252,6 +252,19 @@ namespace LoyaltySystem.Wpf.Pages
                 return;
             }
 
+            if (selectedUser.IsActive == isActive)
+            {
+                var statusText = isActive ? "активен" : "отключен";
+
+                MessageBox.Show(
+                    $"Пользователь уже {statusText}.",
+                    "Проверка данных",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Information);
+
+                return;
+            }
+
             var actionText = isActive ? "активировать" : "отключить";
 
             var result = MessageBox.Show(

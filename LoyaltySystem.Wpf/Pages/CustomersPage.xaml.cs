@@ -1,5 +1,6 @@
 ﻿using LoyaltySystem.Core.DTOs;
 using LoyaltySystem.Core.Entities;
+using LoyaltySystem.Core.Enums;
 using LoyaltySystem.Core.Security;
 using LoyaltySystem.Core.Services;
 using LoyaltySystem.Wpf.Helpers;
@@ -38,10 +39,13 @@ namespace LoyaltySystem.Wpf.Pages
         private void ApplyAccessPolicy()
         {
             var canManage = AccessPolicy.CanManageCustomers;
+            var canBlock = AccessPolicy.CanBlockCustomers;
 
             AddCustomerButton.Visibility = canManage ? Visibility.Visible : Visibility.Collapsed;
             EditCustomerButton.Visibility = canManage ? Visibility.Visible : Visibility.Collapsed;
+            ActivateCustomerButton.Visibility = canManage ? Visibility.Visible : Visibility.Collapsed;
             DeleteCustomerButton.Visibility = canManage ? Visibility.Visible : Visibility.Collapsed;
+            BlockCustomerButton.Visibility = canBlock ? Visibility.Visible : Visibility.Collapsed;
         }
 
         private void LoadCustomers()
@@ -123,22 +127,45 @@ namespace LoyaltySystem.Wpf.Pages
             }
         }
 
+        private void ActivateButton_Click(object sender, RoutedEventArgs e)
+        {
+            ChangeCustomerStatus(StatusEnum.Active, "активировать");
+        }
+
         private void DeleteButton_Click(object sender, RoutedEventArgs e)
+        {
+            ChangeCustomerStatus(StatusEnum.Inactive, "деактивировать");
+        }
+
+        private void BlockButton_Click(object sender, RoutedEventArgs e)
+        {
+            ChangeCustomerStatus(StatusEnum.Blocked, "заблокировать");
+        }
+
+        private void ChangeCustomerStatus(StatusEnum status, string actionText)
         {
             try
             {
-                AccessPolicy.EnsureCanManageCustomers();
+                if (status == StatusEnum.Blocked)
+                    AccessPolicy.EnsureCanBlockCustomers();
+                else
+                    AccessPolicy.EnsureCanManageCustomers();
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.Message, "Доступ запрещен", MessageBoxButton.OK, MessageBoxImage.Warning);
+                MessageBox.Show(
+                    ex.Message,
+                    "Доступ запрещен",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Warning);
+
                 return;
             }
 
             if (CustomersDataGrid.SelectedItem is not CustomerListItem selectedCustomer)
             {
                 MessageBox.Show(
-                    "Выберите клиента для деактивации.",
+                    "Выберите клиента.",
                     "Проверка данных",
                     MessageBoxButton.OK,
                     MessageBoxImage.Warning);
@@ -146,9 +173,19 @@ namespace LoyaltySystem.Wpf.Pages
                 return;
             }
 
+            if (selectedCustomer.Status == GetStatusDisplayName(status))
+            {
+                MessageBox.Show(
+                    $"Клиент уже имеет статус \"{GetStatusDisplayName(status)}\".",
+                    "Проверка данных",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Information);
+
+                return;
+            }
+
             var result = MessageBox.Show(
-                $"Деактивировать клиента {selectedCustomer.FullName}?\n\n" +
-                "Клиент не будет удален физически, его статус изменится на \"Неактивный\".",
+                $"Вы действительно хотите {actionText} клиента \"{selectedCustomer.FullName}\"?",
                 "Подтверждение",
                 MessageBoxButton.YesNo,
                 MessageBoxImage.Question);
@@ -158,18 +195,29 @@ namespace LoyaltySystem.Wpf.Pages
 
             try
             {
-                _customerService.Delete(selectedCustomer.CustomerId);
+                _customerService.SetStatus(selectedCustomer.CustomerId, status);
 
                 LoadCustomers();
             }
             catch (Exception ex)
             {
                 MessageBox.Show(
-                    $"Не удалось деактивировать клиента.\n\n{ex.Message}",
+                    $"Не удалось изменить статус клиента.\n\n{ex.Message}",
                     "Ошибка",
                     MessageBoxButton.OK,
                     MessageBoxImage.Error);
             }
+        }
+
+        private static string GetStatusDisplayName(StatusEnum status)
+        {
+            return status switch
+            {
+                StatusEnum.Active => "Активный",
+                StatusEnum.Inactive => "Неактивный",
+                StatusEnum.Blocked => "Заблокирован",
+                _ => status.ToString()
+            };
         }
 
         private void LoadLevelFilter()

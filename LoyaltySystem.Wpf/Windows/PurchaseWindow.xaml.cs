@@ -240,6 +240,22 @@ namespace LoyaltySystem.Wpf.Windows
                 return false;
             }
 
+            var maxBonusUsed = Math.Round(transactionAmount * 0.20m, 2);
+
+            if (bonusUsed > maxBonusUsed)
+            {
+                MessageBox.Show(
+                    $"Списать бонусами можно не более 20% от суммы покупки.\n\n" +
+                    $"Сумма покупки: {transactionAmount:N2}\n" +
+                    $"Максимум для списания: {maxBonusUsed:N2}\n" +
+                    $"Указано к списанию: {bonusUsed:N2}",
+                    "Проверка данных",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Warning);
+
+                return false;
+            }
+
             var conditionType = GetSelectedComboBoxText(BonusConditionTypeComboBox);
 
             if ((conditionType == "Общая акция" ||

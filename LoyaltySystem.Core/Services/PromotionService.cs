@@ -73,7 +73,17 @@ namespace LoyaltySystem.Core.Services
             db.SaveChanges();
         }
 
+        public void Enable(int promotionId)
+        {
+            SetActive(promotionId, true);
+        }
+
         public void Disable(int promotionId)
+        {
+            SetActive(promotionId, false);
+        }
+
+        public void SetActive(int promotionId, bool isActive)
         {
             using var db = DbContextFactory.Create();
 
@@ -81,9 +91,15 @@ namespace LoyaltySystem.Core.Services
                 .FirstOrDefault(x => x.PromotionId == promotionId);
 
             if (promotion == null)
-                throw new InvalidOperationException("Акция не найдена.");
+                throw new Exception("Акция не найдена.");
 
-            promotion.IsActive = false;
+            if (promotion.IsActive == isActive)
+            {
+                var statusText = isActive ? "активна" : "отключена";
+                throw new Exception($"Акция уже {statusText}.");
+            }
+
+            promotion.IsActive = isActive;
 
             db.SaveChanges();
         }

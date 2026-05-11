@@ -9,6 +9,8 @@
             <RowDefinition Height="10"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="10"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="10"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
@@ -17,7 +19,83 @@
                    FontSize="24"
                    FontWeight="Bold"/>
 
-        <StackPanel Grid.Row="2"
+        <Grid Grid.Row="2">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="280"/>
+                <ColumnDefinition Width="20"/>
+
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="160"/>
+                <ColumnDefinition Width="20"/>
+
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="140"/>
+                <ColumnDefinition Width="20"/>
+
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="140"/>
+                <ColumnDefinition Width="20"/>
+
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+
+            <TextBlock Grid.Column="0"
+                       Text="Поиск:"
+                       VerticalAlignment="Center"
+                       Margin="0,0,8,0"/>
+
+            <TextBox x:Name="SearchTextBox"
+                     Grid.Column="1"
+                     Height="30"
+                     VerticalContentAlignment="Center"
+                     ToolTip="Поиск по клиенту или акции"
+                     TextChanged="SearchTextBox_TextChanged"/>
+
+            <TextBlock Grid.Column="3"
+                       Text="Статус:"
+                       VerticalAlignment="Center"
+                       Margin="0,0,8,0"/>
+
+            <ComboBox x:Name="StatusFilterComboBox"
+                      Grid.Column="4"
+                      Height="30"
+                      SelectionChanged="StatusFilterComboBox_SelectionChanged">
+                <ComboBoxItem Content="Все статусы"/>
+                <ComboBoxItem Content="Назначено"/>
+                <ComboBoxItem Content="Использовано"/>
+                <ComboBoxItem Content="Истекло"/>
+                <ComboBoxItem Content="Отменено"/>
+            </ComboBox>
+
+            <TextBlock Grid.Column="6"
+                       Text="С:"
+                       VerticalAlignment="Center"
+                       Margin="0,0,8,0"/>
+
+            <DatePicker x:Name="StartDatePicker"
+                        Grid.Column="7"
+                        Height="30"
+                        SelectedDateChanged="DatePicker_SelectedDateChanged"/>
+
+            <TextBlock Grid.Column="9"
+                       Text="По:"
+                       VerticalAlignment="Center"
+                       Margin="0,0,8,0"/>
+
+            <DatePicker x:Name="EndDatePicker"
+                        Grid.Column="10"
+                        Height="30"
+                        SelectedDateChanged="DatePicker_SelectedDateChanged"/>
+
+            <Button Grid.Column="12"
+                    Content="Сбросить"
+                    Width="100"
+                    Height="30"
+                    Click="ResetFilterButton_Click"/>
+        </Grid>
+
+        <StackPanel Grid.Row="4"
                     Orientation="Horizontal">
 
             <Button Content="Назначить"
@@ -45,7 +123,7 @@
         </StackPanel>
 
         <DataGrid x:Name="CustomerOffersDataGrid"
-                  Grid.Row="4"
+                  Grid.Row="6"
                   AutoGenerateColumns="False"
                   IsReadOnly="True"
                   SelectionMode="Single"

@@ -1,19 +1,30 @@
 ﻿using LoyaltySystem.Core.DTOs;
+using LoyaltySystem.Core.Entities;
 using LoyaltySystem.Core.Services;
 using LoyaltySystem.Wpf.Windows;
+using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Data;
 
 namespace LoyaltySystem.Wpf.Pages
 {
     public partial class CustomersPage : Page
     {
         private readonly CustomerService _customerService = new();
+        private readonly LoyaltyLevelService _loyaltyLevelService = new();
+        private ObservableCollection<CustomerListItem> _customers = new();
+        private ICollectionView? _customersView;
 
         public CustomersPage()
         {
             InitializeComponent();
 
+            LoadLevelFilter();
+
+            StatusFilterComboBox.SelectedIndex = 0;
+            LevelFilterComboBox.SelectedIndex = 0;
             LoadCustomers();
         }
 
@@ -21,7 +32,13 @@ namespace LoyaltySystem.Wpf.Pages
         {
             try
             {
-                CustomersDataGrid.ItemsSource = _customerService.GetListItems();
+                _customers = new ObservableCollection<CustomerListItem>(
+                    _customerService.GetListItems());
+
+                _customersView = CollectionViewSource.GetDefaultView(_customers);
+                _customersView.Filter = FilterCustomers;
+
+                CustomersDataGrid.ItemsSource = _customersView;
             }
             catch (Exception ex)
             {
@@ -107,6 +124,115 @@ namespace LoyaltySystem.Wpf.Pages
                     MessageBoxButton.OK,
                     MessageBoxImage.Error);
             }
+        }
+
+        private void LoadLevelFilter()
+        {
+            var levels = _loyaltyLevelService.GetComboBoxItems();
+
+            levels.Insert(0, new LoyaltyLevel
+            {
+                LevelId = 0,
+                LevelName = "Все уровни"
+            });
+
+            LevelFilterComboBox.ItemsSource = levels;
+        }
+
+        private bool FilterCustomers(object item)
+        {
+            if (item is not CustomerListItem customer)
+                return false;
+
+            var searchText = SearchTextBox.Text?.Trim();
+
+            if (!string.IsNullOrWhiteSpace(searchText))
+            {
+                var containsSearchText =
+                    ContainsIgnoreCase(customer.FullName, searchText) ||
+                    ContainsIgnoreCase(customer.Phone, searchText) ||
+                    ContainsIgnoreCase(customer.Email, searchText);
+
+                if (!containsSearchText)
+                    return false;
+            }
+
+            var selectedStatus = GetSelectedStatusFilter();
+
+            if (!string.IsNullOrWhiteSpace(selectedStatus) &&
+                !string.Equals(customer.Status, selectedStatus, StringComparison.OrdinalIgnoreCase))
+            {
+                return false;
+            }
+
+            var selectedLevel = GetSelectedLevelFilter();
+
+            if (!string.IsNullOrWhiteSpace(selectedLevel) &&
+                !string.Equals(customer.LevelName, selectedLevel, StringComparison.OrdinalIgnoreCase))
+            {
+                return false;
+            }
+
+            return true;
+        }
+
+        private static bool ContainsIgnoreCase(string? source, string searchText)
+        {
+            if (string.IsNullOrWhiteSpace(source))
+                return false;
+
+            return source.Contains(searchText, StringComparison.OrdinalIgnoreCase);
+        }
+
+        private string? GetSelectedStatusFilter()
+        {
+            if (StatusFilterComboBox.SelectedItem is not ComboBoxItem selectedItem)
+                return null;
+
+            var status = selectedItem.Content?.ToString();
+
+            return status == "Все статусы"
+                ? null
+                : status;
+        }
+
+        private string? GetSelectedLevelFilter()
+        {
+            if (LevelFilterComboBox.SelectedValue is not string levelName)
+                return null;
+
+            return levelName == "Все уровни"
+                ? null
+                : levelName;
+        }
+
+        private void RefreshFilter()
+        {
+            _customersView?.Refresh();
+        }
+
+        private void SearchTextBox_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            RefreshFilter();
+        }
+
+        private void StatusFilterComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            RefreshFilter();
+        }
+
+        private void LevelFilterComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            RefreshFilter();
+        }
+
+        private void ResetFilterButton_Click(object sender, RoutedEventArgs e)
+        {
+            SearchTextBox.Text = string.Empty;
+            StatusFilterComboBox.SelectedIndex = 0;
+            LevelFilterComboBox.SelectedIndex = 0;
+
+            RefreshFilter();
         }
     }
 }

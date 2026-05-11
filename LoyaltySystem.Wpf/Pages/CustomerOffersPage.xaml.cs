@@ -2,18 +2,25 @@
 using LoyaltySystem.Core.Enums;
 using LoyaltySystem.Core.Services;
 using LoyaltySystem.Wpf.Windows;
+using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Data;
 
 namespace LoyaltySystem.Wpf.Pages
 {
     public partial class CustomerOffersPage : Page
     {
         private readonly CustomerOfferService _customerOfferService = new();
+        private ObservableCollection<CustomerOfferListItem> _customerOffers = new();
+        private ICollectionView? _customerOffersView;
 
         public CustomerOffersPage()
         {
             InitializeComponent();
+
+            StatusFilterComboBox.SelectedIndex = 0;
 
             LoadOffers();
         }
@@ -22,7 +29,13 @@ namespace LoyaltySystem.Wpf.Pages
         {
             try
             {
-                CustomerOffersDataGrid.ItemsSource = _customerOfferService.GetListItems();
+                _customerOffers = new ObservableCollection<CustomerOfferListItem>(
+                    _customerOfferService.GetListItems());
+
+                _customerOffersView = CollectionViewSource.GetDefaultView(_customerOffers);
+                _customerOffersView.Filter = FilterCustomerOffers;
+
+                CustomerOffersDataGrid.ItemsSource = _customerOffersView;
             }
             catch (Exception ex)
             {
@@ -104,6 +117,98 @@ namespace LoyaltySystem.Wpf.Pages
                     MessageBoxButton.OK,
                     MessageBoxImage.Error);
             }
+        }
+
+        private bool FilterCustomerOffers(object item)
+        {
+            if (item is not CustomerOfferListItem offer)
+                return false;
+
+            var searchText = SearchTextBox.Text?.Trim();
+
+            if (!string.IsNullOrWhiteSpace(searchText))
+            {
+                var containsSearchText =
+                    ContainsIgnoreCase(offer.CustomerFullName, searchText) ||
+                    ContainsIgnoreCase(offer.PromotionName, searchText);
+
+                if (!containsSearchText)
+                    return false;
+            }
+
+            var selectedStatus = GetSelectedStatusFilter();
+
+            if (!string.IsNullOrWhiteSpace(selectedStatus) &&
+                !string.Equals(offer.OfferStatus, selectedStatus, StringComparison.OrdinalIgnoreCase))
+            {
+                return false;
+            }
+
+            var assignedDate = offer.AssignedAt.Date;
+
+            if (StartDatePicker.SelectedDate != null &&
+                assignedDate < StartDatePicker.SelectedDate.Value.Date)
+            {
+                return false;
+            }
+
+            if (EndDatePicker.SelectedDate != null &&
+                assignedDate > EndDatePicker.SelectedDate.Value.Date)
+            {
+                return false;
+            }
+
+            return true;
+        }
+
+        private static bool ContainsIgnoreCase(string? source, string searchText)
+        {
+            if (string.IsNullOrWhiteSpace(source))
+                return false;
+
+            return source.Contains(searchText, StringComparison.OrdinalIgnoreCase);
+        }
+
+        private string? GetSelectedStatusFilter()
+        {
+            if (StatusFilterComboBox.SelectedItem is not ComboBoxItem selectedItem)
+                return null;
+
+            var status = selectedItem.Content?.ToString();
+
+            return status == "Все статусы"
+                ? null
+                : status;
+        }
+
+        private void RefreshFilter()
+        {
+            _customerOffersView?.Refresh();
+        }
+
+        private void SearchTextBox_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            RefreshFilter();
+        }
+
+        private void StatusFilterComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            RefreshFilter();
+        }
+
+        private void DatePicker_SelectedDateChanged(object? sender, SelectionChangedEventArgs e)
+        {
+            RefreshFilter();
+        }
+
+        private void ResetFilterButton_Click(object sender, RoutedEventArgs e)
+        {
+            SearchTextBox.Text = string.Empty;
+            StatusFilterComboBox.SelectedIndex = 0;
+            StartDatePicker.SelectedDate = null;
+            EndDatePicker.SelectedDate = null;
+
+            RefreshFilter();
         }
     }
 }

@@ -7,6 +7,8 @@
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="10"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="10"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
@@ -15,8 +17,84 @@
                    FontSize="24"
                    FontWeight="Bold"/>
 
+        <Grid Grid.Row="2">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="280"/>
+                <ColumnDefinition Width="20"/>
+
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="170"/>
+                <ColumnDefinition Width="20"/>
+
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="140"/>
+                <ColumnDefinition Width="20"/>
+
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="140"/>
+                <ColumnDefinition Width="20"/>
+
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+
+            <TextBlock Grid.Column="0"
+                       Text="Поиск:"
+                       VerticalAlignment="Center"
+                       Margin="0,0,8,0"/>
+
+            <TextBox x:Name="SearchTextBox"
+                     Grid.Column="1"
+                     Height="30"
+                     VerticalContentAlignment="Center"
+                     ToolTip="Поиск по ФИО клиента или описанию"
+                     TextChanged="SearchTextBox_TextChanged"/>
+
+            <TextBlock Grid.Column="3"
+                       Text="Тип:"
+                       VerticalAlignment="Center"
+                       Margin="0,0,8,0"/>
+
+            <ComboBox x:Name="BonusTypeFilterComboBox"
+                      Grid.Column="4"
+                      Height="30"
+                      SelectionChanged="BonusTypeFilterComboBox_SelectionChanged">
+                <ComboBoxItem Content="Все типы"/>
+                <ComboBoxItem Content="Начисление"/>
+                <ComboBoxItem Content="Списание"/>
+                <ComboBoxItem Content="Корректировка"/>
+                <ComboBoxItem Content="Сгорание"/>
+            </ComboBox>
+
+            <TextBlock Grid.Column="6"
+                       Text="С:"
+                       VerticalAlignment="Center"
+                       Margin="0,0,8,0"/>
+
+            <DatePicker x:Name="StartDatePicker"
+                        Grid.Column="7"
+                        Height="30"
+                        SelectedDateChanged="DatePicker_SelectedDateChanged"/>
+
+            <TextBlock Grid.Column="9"
+                       Text="По:"
+                       VerticalAlignment="Center"
+                       Margin="0,0,8,0"/>
+
+            <DatePicker x:Name="EndDatePicker"
+                        Grid.Column="10"
+                        Height="30"
+                        SelectedDateChanged="DatePicker_SelectedDateChanged"/>
+
+            <Button Grid.Column="12"
+                    Content="Сбросить"
+                    Width="100"
+                    Height="30"
+                    Click="ResetFilterButton_Click"/>
+        </Grid>
+
         <DataGrid x:Name="BonusTransactionsDataGrid"
-                  Grid.Row="2"
+                  Grid.Row="4"
                   AutoGenerateColumns="False"
                   IsReadOnly="True"
                   SelectionMode="Single"
@@ -28,7 +106,7 @@
             <DataGrid.Columns>
                 <DataGridTextColumn Header="ID"
                                     Binding="{Binding BonusTransactionId}"
-                                    Width="70"/>
+                                    Width="50"/>
 
                 <DataGridTextColumn Header="ID счета"
                                     Binding="{Binding AccountId}"
@@ -36,27 +114,27 @@
 
                 <DataGridTextColumn Header="ID транзакции"
                                     Binding="{Binding TransactionId}"
-                                    Width="110"/>
+                                    Width="90"/>
 
                 <DataGridTextColumn Header="Клиент"
                                     Binding="{Binding CustomerFullName}"
-                                    Width="220"/>
+                                    Width="500"/>
 
                 <DataGridTextColumn Header="Тип операции"
                                     Binding="{Binding BonusTransactionType}"
-                                    Width="130"/>
+                                    Width="100"/>
 
                 <DataGridTextColumn Header="Сумма"
                                     Binding="{Binding Amount, StringFormat=N2}"
-                                    Width="110"/>
+                                    Width="100"/>
 
                 <DataGridTextColumn Header="Дата операции"
                                     Binding="{Binding BonusTransactionDatetime, StringFormat=dd.MM.yyyy HH:mm}"
-                                    Width="160"/>
+                                    Width="100"/>
 
                 <DataGridTextColumn Header="Описание"
                                     Binding="{Binding Description}"
-                                    Width="*"/>
+                                    Width="630"/>
             </DataGrid.Columns>
         </DataGrid>
     </Grid>

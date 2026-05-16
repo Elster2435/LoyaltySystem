@@ -12,10 +12,14 @@
 
         public string Login { get; set; } = string.Empty;
 
+        public string? CurrentPassword { get; set; }
+
         public string? Password { get; set; }
 
         public int RoleId { get; set; }
 
         public bool IsActive { get; set; } = true;
+
+        public int? CurrentUserId { get; set; }
     }
 }

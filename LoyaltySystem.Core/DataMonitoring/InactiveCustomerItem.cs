@@ -17,5 +17,7 @@
         public DateTime? LastPurchaseDate { get; set; }
 
         public int DaysSinceLastPurchase { get; set; }
+
+        public bool HasPurchases { get; set; }
     }
 }

@@ -11,9 +11,6 @@ namespace LoyaltySystem.Core.Enums
         WriteOff,
 
         [PgName("Корректировка")]
-        Correction,
-
-        [PgName("Сгорание")]
-        Expiration
+        Correction
     }
 }

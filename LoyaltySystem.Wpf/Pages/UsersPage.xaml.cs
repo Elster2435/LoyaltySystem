@@ -278,7 +278,12 @@ namespace LoyaltySystem.Wpf.Pages
 
             try
             {
-                _authService.SetUserActive(selectedUser.UserId, isActive);
+                var currentUser = CurrentUserContext.GetRequiredUser();
+
+                _authService.SetUserActive(
+                    selectedUser.UserId,
+                    isActive,
+                    currentUser.UserId);
 
                 LoadUsers();
             }

@@ -1,4 +1,5 @@
-﻿using LoyaltySystem.Core.Security;
+﻿using LoyaltySystem.Core.Enums;
+using LoyaltySystem.Core.Security;
 using LoyaltySystem.Core.Services;
 using System.Windows;
 using System.Windows.Controls;
@@ -11,6 +12,7 @@ namespace LoyaltySystem.Wpf.Windows
 
         private readonly int? _userId;
         private bool _isEditMode;
+        private bool _editingAdministrator;
 
         public UserWindow()
         {
@@ -73,6 +75,13 @@ namespace LoyaltySystem.Wpf.Windows
                 LoginTextBox.Text = user.Login;
                 RoleComboBox.SelectedValue = user.RoleId;
                 IsActiveCheckBox.IsChecked = user.IsActive;
+
+                if (RoleComboBox.SelectedItem is RoleComboBoxItem selectedRole)
+                {
+                    _editingAdministrator = selectedRole.RoleName == "Администратор";
+                }
+
+                ConfigureCurrentPasswordVisibility();
             }
             catch (Exception ex)
             {
@@ -103,6 +112,8 @@ namespace LoyaltySystem.Wpf.Windows
                 }
 
                 var password = PasswordBox.Password;
+                var currentPassword = CurrentPasswordBox.Password;
+                var currentUser = CurrentUserContext.GetRequiredUser();
 
                 var dto = new UserSaveDto
                 {
@@ -111,11 +122,19 @@ namespace LoyaltySystem.Wpf.Windows
                     FirstName = FirstNameTextBox.Text,
                     MiddleName = MiddleNameTextBox.Text,
                     Login = LoginTextBox.Text,
+
                     Password = string.IsNullOrWhiteSpace(password)
                         ? null
                         : password,
+
+                    CurrentPassword = string.IsNullOrWhiteSpace(currentPassword)
+                        ? null
+                        : currentPassword,
+
                     RoleId = roleId,
-                    IsActive = IsActiveCheckBox.IsChecked == true
+                    IsActive = IsActiveCheckBox.IsChecked == true,
+
+                    CurrentUserId = currentUser.UserId
                 };
 
                 if (_isEditMode)
@@ -144,6 +163,19 @@ namespace LoyaltySystem.Wpf.Windows
         {
             DialogResult = false;
             Close();
+        }
+
+        private void ConfigureCurrentPasswordVisibility()
+        {
+            var showCurrentPassword = _isEditMode && _editingAdministrator;
+
+            CurrentPasswordTextBlock.Visibility = showCurrentPassword
+                ? Visibility.Visible
+                : Visibility.Collapsed;
+
+            CurrentPasswordPanel.Visibility = showCurrentPassword
+                ? Visibility.Visible
+                : Visibility.Collapsed;
         }
     }
 }

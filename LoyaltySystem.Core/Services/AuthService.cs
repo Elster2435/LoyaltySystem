@@ -178,6 +178,11 @@ namespace LoyaltySystem.Core.Services
             if (user == null)
                 throw new Exception("Пользователь не найден.");
 
+            if (dto.CurrentUserId != null &&
+                user.UserId == dto.CurrentUserId.Value &&
+                !dto.IsActive)
+                throw new Exception("Нельзя отключить собственную учетную запись.");
+
             var normalizedLogin = dto.Login.Trim().ToLower();
 
             var loginExists = db.Users
@@ -214,13 +219,31 @@ namespace LoyaltySystem.Core.Services
 
             if (!string.IsNullOrWhiteSpace(dto.Password))
             {
+                if (user.Role?.RoleName == RoleNameEnum.Administrator)
+                {
+                    if (string.IsNullOrWhiteSpace(dto.CurrentPassword))
+                    {
+                        throw new Exception(
+                            "Для смены пароля администратора необходимо указать текущий пароль.");
+                    }
+
+                    var isCurrentPasswordValid = PasswordHasher.VerifyPassword(
+                        dto.CurrentPassword,
+                        user.PasswordHash);
+
+                    if (!isCurrentPasswordValid)
+                    {
+                        throw new Exception("Текущий пароль администратора указан неверно.");
+                    }
+                }
+
                 user.PasswordHash = PasswordHasher.HashPassword(dto.Password);
             }
 
             db.SaveChanges();
         }
 
-        public void SetUserActive(int userId, bool isActive)
+        public void SetUserActive(int userId, bool isActive, int currentUserId)
         {
             using var db = DbContextFactory.Create();
 
@@ -230,6 +253,9 @@ namespace LoyaltySystem.Core.Services
 
             if (user == null)
                 throw new Exception("Пользователь не найден.");
+
+            if (!isActive && user.UserId == currentUserId)
+                throw new Exception("Нельзя отключить собственную учетную запись.");
 
             if (user.IsActive == isActive)
             {

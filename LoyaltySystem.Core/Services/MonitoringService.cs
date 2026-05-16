@@ -254,9 +254,12 @@ namespace LoyaltySystem.Core.Services
                         .FirstOrDefault(p => p.CustomerId == x.CustomerId)
                         ?.LastPurchaseDate;
 
-                    var daysSinceLastPurchase = lastPurchaseDate == null
-                        ? int.MaxValue
-                        : (currentDate - lastPurchaseDate.Value.Date).Days;
+                    var hasPurchases = lastPurchaseDate != null;
+
+                    var countFromDate = lastPurchaseDate?.Date
+                        ?? x.Customer!.RegistrationDate.Date;
+
+                    var daysSinceLastPurchase = (currentDate - countFromDate).Days;
 
                     return new InactiveCustomerItem
                     {
@@ -279,10 +282,12 @@ namespace LoyaltySystem.Core.Services
 
                         LastPurchaseDate = lastPurchaseDate,
 
-                        DaysSinceLastPurchase = daysSinceLastPurchase
+                        DaysSinceLastPurchase = daysSinceLastPurchase,
+
+                        HasPurchases = hasPurchases
                     };
                 })
-                .Where(x => x.DaysSinceLastPurchase >= daysWithoutPurchases)
+                .Where(x => !x.HasPurchases || x.DaysSinceLastPurchase >= daysWithoutPurchases)
                 .OrderByDescending(x => x.DaysSinceLastPurchase)
                 .ToList();
         }

@@ -1,4 +1,5 @@
 <Solution>
   <Project Path="LoyaltySystem.Core/LoyaltySystem.Core.csproj" />
   <Project Path="LoyaltySystem.Wpf/LoyaltySystem.Wpf.csproj" />
+  <Project Path="LoyaltySystem.WService/LoyaltySystem.WService.csproj" Id="f6f22ed6-f791-40dd-a73b-35f75b4a884c" />
 </Solution>

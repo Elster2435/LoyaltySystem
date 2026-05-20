@@ -1,0 +1,1510 @@
+create type gender_enum as enum('Мужской', 'Женский');
+create type status_enum as enum('Активный', 'Неактивный', 'Заблокирован');
+create type transaction_channel_enum as enum('Оффлайн', 'Онлайн');
+create type transaction_type_enum as enum('Покупка', 'Возврат');
+create type promotion_type_enum as enum('Общая', 'Персональная', 'Новый клиент', 'День рождения', 'Возврат клиента', 'Возврат покупки');
+create type offer_status_enum as enum('Назначено', 'Использовано', 'Истекло', 'Отменено');
+create type activity_type_enum as enum(
+    'Регистрация',
+    'Покупка',
+    'Возврат покупки',
+    'Начисление бонусов',
+    'Списание бонусов',
+    'Получено предложение',
+    'Использовано предложение',
+	'Истекло предложение',
+    'Отменено предложение',
+    'Применена акция',
+    'Изменение профиля'
+);
+create type bonus_transaction_type_enum as enum('Начисление', 'Списание', 'Корректировка');
+create type role_name_enum as enum('Администратор', 'Менеджер', 'Аналитик');
+
+create table customers (
+    customer_id serial primary key,
+    last_name varchar(64) not null,
+    first_name varchar(64) not null,
+    middle_name varchar(64),
+    phone varchar(20) not null unique,
+    email varchar(128) not null unique,
+    birth_date date,
+    gender gender_enum not null,
+    registration_date timestamp not null default (current_timestamp at time zone 'Asia/Yekaterinburg'),
+    status status_enum not null,
+    updated_at timestamp not null default (current_timestamp at time zone 'Asia/Yekaterinburg')
+);
+
+create table loyalty_levels (
+    level_id serial primary key,
+    level_name varchar(50) not null unique,
+    min_total_spent numeric(12,2) not null default 0,
+    bonus_percent numeric(5,2) not null default 0,
+
+    constraint chk_min_total_spent
+        check (min_total_spent >= 0),
+
+    constraint chk_bonus_percent
+        check (bonus_percent >= 0 and bonus_percent <= 100)
+);
+insert into loyalty_levels (level_name, min_total_spent, bonus_percent)
+values
+('Базовый', 0, 0),
+('Серебряный', 10000, 5),
+('Золотой', 15000, 7.5),
+('Платиновый', 20000, 10);
+
+create table customer_loyalty_accounts (
+    account_id serial primary key,
+    customer_id int not null unique,
+    level_id int not null,
+    bonus_balance numeric(12,2) not null default 0,
+    total_spent numeric(12,2) not null default 0,
+    created_at timestamp not null default (current_timestamp at time zone 'Asia/Yekaterinburg'),
+    account_status status_enum not null,
+
+    constraint fk_loyalty_customer
+        foreign key (customer_id)
+        references customers(customer_id)
+        on delete cascade,
+
+    constraint fk_loyalty_level
+        foreign key (level_id)
+        references loyalty_levels(level_id)
+        on delete restrict,
+
+    constraint chk_bonus_balance
+        check (bonus_balance >= 0),
+
+    constraint chk_total_spent
+        check (total_spent >= 0)
+);
+
+create table promotions (
+    promotion_id serial primary key,
+    promotion_type promotion_type_enum not null,
+    promotion_name varchar(200) not null,
+    description text,
+    start_date date not null,
+    end_date date not null,
+    bonus_multiplier numeric(5,2) not null default 1,
+    extra_bonus numeric(12,2) not null default 0,
+    required_level_id int,
+    is_active boolean not null default true,
+
+    constraint fk_promotion_level 
+        foreign key (required_level_id)
+        references loyalty_levels(level_id)
+        on delete set null,
+
+    constraint chk_promotion_dates 
+        check (end_date >= start_date),
+
+    constraint chk_bonus_multiplier 
+        check (bonus_multiplier >= 1),
+
+    constraint chk_extra_bonus 
+        check (extra_bonus >= 0)
+);
+
+create table customer_offers (
+    offer_id serial primary key,
+    customer_id int not null,
+    promotion_id int not null,
+    assigned_at timestamp not null default (current_timestamp at time zone 'Asia/Yekaterinburg'),
+    valid_until timestamp,
+    offer_status offer_status_enum not null default 'Назначено',
+
+    constraint fk_offer_customer
+        foreign key (customer_id)
+        references customers(customer_id)
+        on delete cascade,
+
+    constraint fk_offer_promotion
+        foreign key (promotion_id)
+        references promotions(promotion_id)
+        on delete restrict
+);
+
+create table customer_activity (
+    activity_id serial primary key,
+    customer_id int,
+    activity_type activity_type_enum not null,
+    activity_datetime timestamp not null default (current_timestamp at time zone 'Asia/Yekaterinburg'),
+    description text,
+
+    constraint fk_activity_customer
+        foreign key (customer_id)
+        references customers(customer_id)
+        on delete set null
+);
+
+create table transactions (
+    transaction_id serial primary key,
+    transaction_type transaction_type_enum not null default 'Покупка',
+    original_transaction_id int,
+    customer_id int,
+    transaction_datetime timestamp not null default (current_timestamp at time zone 'Asia/Yekaterinburg'),
+    transaction_amount numeric(12,2) not null,
+    bonus_used numeric(12,2) not null default 0,
+    paid_amount numeric(12,2) not null default 0,
+    bonus_accrued numeric(12,2) not null default 0,
+    bonus_compensation_amount numeric(12,2) not null default 0,
+    transaction_channel transaction_channel_enum not null default 'Оффлайн',
+    promotion_id int,
+    offer_id int,
+    comment text,
+
+    constraint chk_transaction_original
+        check (
+        (transaction_type = 'Покупка' and original_transaction_id is null)
+        or
+        (transaction_type = 'Возврат' and original_transaction_id is not null)
+    ),
+
+    constraint chk_transaction_not_self_return
+        check (
+        original_transaction_id is null
+        or original_transaction_id <> transaction_id
+    ),
+
+    constraint fk_transactions_customer
+        foreign key (customer_id)
+        references customers(customer_id)
+        on delete set null,
+
+    constraint fk_transactions_original_transaction
+        foreign key (original_transaction_id)
+        references transactions(transaction_id)
+        on delete restrict,
+
+    constraint fk_transactions_promotion
+        foreign key (promotion_id)
+        references promotions(promotion_id)
+        on delete set null,
+    
+    constraint fk_transactions_offer
+        foreign key (offer_id)
+        references customer_offers(offer_id)
+        on delete set null,
+
+    constraint chk_transaction_amount
+        check (transaction_amount >= 0),
+
+    constraint chk_bonus_accrued
+        check (bonus_accrued >= 0),
+
+    constraint chk_bonus_used
+        check (bonus_used >= 0),
+
+    constraint chk_paid_amount
+        check (paid_amount >= 0),
+
+    constraint chk_bonus_compensation_amount
+        check (bonus_compensation_amount >= 0)
+);
+
+create table bonus_transactions (
+    bonus_transaction_id serial primary key,
+    account_id int not null,
+    transaction_id int,
+    bonus_transaction_type bonus_transaction_type_enum not null,
+    amount numeric(12,2) not null,
+    bonus_transaction_datetime timestamp not null default (current_timestamp at time zone 'Asia/Yekaterinburg'),
+    description text,
+
+    constraint fk_bonus_account 
+        foreign key (account_id) 
+        references customer_loyalty_accounts(account_id) 
+        on delete cascade,
+
+    constraint fk_bonus_for_transaction 
+        foreign key (transaction_id) 
+        references transactions(transaction_id) 
+        on delete set null,
+
+    constraint chk_bonus_amount 
+        check (amount >= 0)
+);
+
+create table roles (
+    role_id serial primary key,
+    role_name role_name_enum not null unique
+);
+
+insert into roles (role_name)
+values
+('Администратор'),
+('Менеджер'),
+('Аналитик');
+
+create table users (
+    user_id serial primary key,
+    last_name varchar(64) not null,
+    first_name varchar(64) not null,
+    middle_name varchar(64),
+    login varchar(32) not null unique,
+    password_hash text not null,
+    role_id int not null,
+    is_active boolean not null default true,
+    created_at timestamp not null default (current_timestamp at time zone 'Asia/Yekaterinburg'),
+    updated_at timestamp not null default (current_timestamp at time zone 'Asia/Yekaterinburg'),
+
+    constraint fk_user_role 
+        foreign key (role_id) 
+        references roles(role_id) 
+        on delete restrict
+);
+
+create index idx_customer_full_name on customers(last_name, first_name, middle_name);
+create index idx_user_full_name(last_name, first_name, middle_name);
+create index idx_customer_status on customers(status);
+create index idx_loyalty_accounts_level_id on customer_loyalty_accounts(level_id);
+create index idx_loyalty_accounts_status on customer_loyalty_accounts(account_status);
+create index idx_transactions_customer_datetime on transactions(customer_id, transaction_datetime);
+create index idx_bonus_transactions_account_datetime on bonus_transactions(account_id, bonus_transaction_datetime); 
+create index idx_customer_offers_customer_status on customer_offers(customer_id, offer_status);
+create index idx_customer_activity_customer_datetime on customer_activity(customer_id, activity_datetime);
+create unique index ux_transactions_one_return_per_purchase
+on transactions(original_transaction_id)
+where transaction_type = 'Возврат';
+
+-- ============================================================
+-- 1. Автоматическое обновление updated_at
+-- ============================================================
+
+create or replace function fn_set_updated_at()
+returns trigger
+language plpgsql
+as $$
+begin
+    new.updated_at := current_timestamp at time zone 'Asia/Yekaterinburg';
+    return new;
+end;
+$$;
+
+
+drop trigger if exists trg_customers_set_updated_at on customers;
+
+create trigger trg_customers_set_updated_at
+before update on customers
+for each row
+execute function fn_set_updated_at();
+
+
+drop trigger if exists trg_users_set_updated_at on users;
+
+create trigger trg_users_set_updated_at
+before update on users
+for each row
+execute function fn_set_updated_at();
+
+-- ============================================================
+-- 2. Создание бонусного счета при регистрации клиента
+-- ============================================================
+
+create or replace function fn_create_loyalty_account_after_customer()
+returns trigger
+language plpgsql
+as $$
+declare
+    v_base_level_id int;
+begin
+    select level_id
+    into v_base_level_id
+    from loyalty_levels
+    order by min_total_spent
+    limit 1;
+
+    if v_base_level_id is null then
+        raise exception 'Не найден базовый уровень лояльности';
+    end if;
+
+    insert into customer_loyalty_accounts
+    (
+        customer_id,
+        level_id,
+        bonus_balance,
+        total_spent,
+        created_at,
+        account_status
+    )
+    values
+    (
+        new.customer_id,
+        v_base_level_id,
+        0,
+        0,
+        current_timestamp at time zone 'Asia/Yekaterinburg',
+        'Активный'
+    );
+
+    insert into customer_activity
+    (
+        customer_id,
+        activity_type,
+        activity_datetime,
+        description
+    )
+    values
+    (
+        new.customer_id,
+        'Регистрация',
+        current_timestamp at time zone 'Asia/Yekaterinburg',
+        'Клиент зарегистрирован в программе лояльности'
+    );
+
+    return new;
+end;
+$$;
+
+
+drop trigger if exists trg_create_loyalty_account_after_customer on customers;
+
+create trigger trg_create_loyalty_account_after_customer
+after insert on customers
+for each row
+execute function fn_create_loyalty_account_after_customer();
+
+-- ============================================================
+-- 3. Автоматическое назначение предложения новому клиенту
+-- ============================================================
+
+create or replace function fn_assign_new_customer_offer()
+returns trigger
+language plpgsql
+as $$
+declare
+    v_promotion_id int;
+begin
+    select promotion_id
+    into v_promotion_id
+    from promotions
+    where is_active = true
+      and promotion_type = 'Новый клиент'
+      and (current_timestamp at time zone 'Asia/Yekaterinburg')::date between start_date and end_date
+    order by start_date desc, promotion_id desc
+    limit 1;
+
+    if v_promotion_id is null then
+        return new;
+    end if;
+
+    if exists (
+        select 1
+        from customer_offers
+        where customer_id = new.customer_id
+          and promotion_id = v_promotion_id
+    ) then
+        return new;
+    end if;
+
+    insert into customer_offers
+    (
+        customer_id,
+        promotion_id,
+        assigned_at,
+        valid_until,
+        offer_status
+    )
+    values
+    (
+        new.customer_id,
+        v_promotion_id,
+        current_timestamp at time zone 'Asia/Yekaterinburg',
+        (current_timestamp at time zone 'Asia/Yekaterinburg') + interval '14 days',
+        'Назначено'
+    );
+
+    insert into customer_activity
+    (
+        customer_id,
+        activity_type,
+        activity_datetime,
+        description
+    )
+    values
+    (
+        new.customer_id,
+        'Получено предложение',
+        current_timestamp at time zone 'Asia/Yekaterinburg',
+        'Новому клиенту автоматически назначено приветственное персональное предложение на 14 дней'
+    );
+
+    return new;
+end;
+$$;
+
+
+drop trigger if exists trg_assign_new_customer_offer on customers;
+
+create trigger trg_assign_new_customer_offer
+after insert on customers
+for each row
+execute function fn_assign_new_customer_offer();
+
+-- ============================================================
+-- 4. Автоматическое назначение предложения ко дню рождения
+-- ============================================================
+
+create or replace function fn_assign_birthday_customer_offers()
+returns integer
+language plpgsql
+as $$
+declare
+    v_now timestamp := current_timestamp at time zone 'Asia/Yekaterinburg';
+    v_today date := (current_timestamp at time zone 'Asia/Yekaterinburg')::date;
+    v_target_date date := ((current_timestamp at time zone 'Asia/Yekaterinburg')::date + 3);
+
+    v_birthday_promotion_id integer;
+    v_inserted_count integer := 0;
+begin
+    select p.promotion_id
+    into v_birthday_promotion_id
+    from promotions p
+    where p.promotion_type = 'День рождения'
+      and p.is_active = true
+      and p.start_date <= v_today
+      and p.end_date >= v_today
+    order by p.promotion_id
+    limit 1;
+
+    if v_birthday_promotion_id is null then
+        return 0;
+    end if;
+
+    with target_customers as (
+        select c.customer_id
+        from customers c
+        where c.status = 'Активный'
+          and c.birth_date is not null
+          and extract(month from c.birth_date) = extract(month from v_target_date)
+          and extract(day from c.birth_date) = extract(day from v_target_date)
+
+          and not exists (
+              select 1
+              from customer_offers co
+              join promotions p on p.promotion_id = co.promotion_id
+              where co.customer_id = c.customer_id
+                and p.promotion_type = 'День рождения'
+                and co.offer_status = 'Назначено'
+                and co.valid_until >= v_today
+          )
+    ),
+    inserted_offers as (
+        insert into customer_offers (
+            customer_id,
+            promotion_id,
+            assigned_at,
+            valid_until,
+            offer_status
+        )
+        select
+            tc.customer_id,
+            v_birthday_promotion_id,
+            v_now,
+            v_today + 6,
+            'Назначено'
+        from target_customers tc
+        returning offer_id, customer_id
+    ),
+    inserted_activity as (
+        insert into customer_activity (
+            customer_id,
+            activity_type,
+            activity_datetime,
+            description
+        )
+        select
+            io.customer_id,
+            'Получено предложение',
+            v_now,
+            'Автоматически назначено персональное предложение ко дню рождения.'
+        from inserted_offers io
+        returning activity_id
+    )
+    select count(*)
+    into v_inserted_count
+    from inserted_offers;
+
+    return v_inserted_count;
+end;
+$$;
+
+-- ============================================================
+-- 5. Автоматическое назначение предложения возврата клиента
+-- ============================================================
+
+create or replace function fn_process_inactive_customers()
+returns table (
+    return_offers_created integer,
+    customers_deactivated integer
+)
+language plpgsql
+as $$
+declare
+    v_now timestamp := current_timestamp at time zone 'Asia/Yekaterinburg';
+    v_today date := (current_timestamp at time zone 'Asia/Yekaterinburg')::date;
+
+    v_return_promotion_id integer;
+    v_created_offers integer := 0;
+    v_deactivated_customers integer := 0;
+begin
+    select p.promotion_id
+    into v_return_promotion_id
+    from promotions p
+    where p.promotion_type = 'Возврат клиента'
+      and p.is_active = true
+      and p.start_date <= v_today
+      and p.end_date >= v_today
+    order by p.promotion_id
+    limit 1;
+
+    if v_return_promotion_id is not null then
+        with customer_last_purchase as (
+            select
+                c.customer_id,
+                coalesce(
+                    max(t.transaction_datetime)::date,
+                    c.registration_date::date
+                ) as last_purchase_or_registration_date
+            from customers c
+            left join transactions t
+                on t.customer_id = c.customer_id
+               and t.transaction_type = 'Покупка'
+            where c.status = 'Активный'
+            group by c.customer_id, c.registration_date
+        ),
+        target_customers as (
+            select clp.customer_id
+            from customer_last_purchase clp
+            where (v_today - clp.last_purchase_or_registration_date) >= 30
+              and (v_today - clp.last_purchase_or_registration_date) < 60
+              and not exists (
+                  select 1
+                  from customer_offers co
+                  join promotions p on p.promotion_id = co.promotion_id
+                  where co.customer_id = clp.customer_id
+                    and p.promotion_type = 'Возврат клиента'
+                    and co.offer_status = 'Назначено'
+                    and co.valid_until >= v_today
+              )
+        ),
+        inserted_offers as (
+            insert into customer_offers (
+                customer_id,
+                promotion_id,
+                assigned_at,
+                valid_until,
+                offer_status
+            )
+            select
+                tc.customer_id,
+                v_return_promotion_id,
+                v_now,
+                v_today + 30,
+                'Назначено'
+            from target_customers tc
+            returning offer_id, customer_id
+        ),
+        inserted_activity as (
+            insert into customer_activity (
+                customer_id,
+                activity_type,
+                activity_datetime,
+                description
+            )
+            select
+                io.customer_id,
+                'Получено предложение',
+                v_now,
+                'Автоматически назначено персональное предложение для возврата клиента.'
+            from inserted_offers io
+            returning activity_id
+        )
+        select count(*)
+        into v_created_offers
+        from inserted_offers;
+    end if;
+
+    with customer_last_purchase as (
+        select
+            c.customer_id,
+            coalesce(
+                max(t.transaction_datetime)::date,
+                c.registration_date::date
+            ) as last_purchase_or_registration_date
+        from customers c
+        left join transactions t
+            on t.customer_id = c.customer_id
+           and t.transaction_type = 'Покупка'
+        where c.status = 'Активный'
+        group by c.customer_id, c.registration_date
+    ),
+    target_customers as (
+        select clp.customer_id
+        from customer_last_purchase clp
+        where (v_today - clp.last_purchase_or_registration_date) >= 60
+    ),
+    deactivated_customers as (
+        update customers c
+        set status = 'Неактивный',
+            updated_at = v_now
+        from target_customers tc
+        where c.customer_id = tc.customer_id
+        returning c.customer_id
+    ),
+    updated_accounts as (
+        update customer_loyalty_accounts cla
+        set account_status = 'Неактивный'
+        from deactivated_customers dc
+        where cla.customer_id = dc.customer_id
+        returning cla.account_id, cla.customer_id
+    ),
+    inserted_activity as (
+        insert into customer_activity (
+            customer_id,
+            activity_type,
+            activity_datetime,
+            description
+        )
+        select
+            dc.customer_id,
+            'Изменение профиля',
+            v_now,
+            'Клиент автоматически переведен в статус "Неактивный" из-за отсутствия покупок 60 дней.'
+        from deactivated_customers dc
+        returning activity_id
+    )
+    select count(*)
+    into v_deactivated_customers
+    from deactivated_customers;
+
+    return query
+    select v_created_offers, v_deactivated_customers;
+end;
+$$;
+
+-- ============================================================
+-- 6. Истечение просроченных персональных предложений
+-- ============================================================
+
+create or replace function fn_expire_overdue_customer_offers()
+returns integer
+language plpgsql
+as $$
+declare
+    v_expired_count integer := 0;
+begin
+    insert into customer_activity
+    (
+        customer_id,
+        activity_type,
+        activity_datetime,
+        description
+    )
+    select
+        co.customer_id,
+        'Истекло предложение',
+        current_timestamp at time zone 'Asia/Yekaterinburg',
+        'Срок действия персонального предложения "' || p.promotion_name || '" истек'
+    from customer_offers co
+    join promotions p
+        on co.promotion_id = p.promotion_id
+    where co.offer_status = 'Назначено'
+      and co.valid_until is not null
+      and co.valid_until::date < (current_timestamp at time zone 'Asia/Yekaterinburg')::date;
+
+    update customer_offers co
+    set offer_status = 'Истекло'
+    where co.offer_status = 'Назначено'
+      and co.valid_until is not null
+      and co.valid_until::date < (current_timestamp at time zone 'Asia/Yekaterinburg')::date;
+
+    get diagnostics v_expired_count = row_count;
+
+    return v_expired_count;
+end;
+$$;
+
+-- ============================================================
+-- 7. Проверка и расчет транзакции перед добавлением
+-- ============================================================
+
+create or replace function fn_prepare_transaction_before_insert()
+returns trigger
+language plpgsql
+as $$
+declare
+    v_account_id int;
+    v_level_id int;
+    v_level_min_total_spent numeric(12,2);
+    v_bonus_percent numeric(5,2);
+    v_bonus_balance numeric(12,2);
+
+    v_paid_amount numeric(12,2);
+    v_base_bonus numeric(12,2);
+
+    v_bonus_multiplier numeric(5,2) := 1;
+    v_extra_bonus numeric(12,2) := 0;
+
+    v_required_level_id int;
+    v_required_level_min_total_spent numeric(12,2);
+
+    v_promotion_name varchar(200);
+    v_promotion_start_date date;
+    v_promotion_end_date date;
+    v_promotion_is_active boolean;
+
+    v_transaction_date date;
+
+    v_original transactions%rowtype;
+
+    v_available_bonus numeric(12,2);
+    v_missing_bonus numeric(12,2);
+    v_return_paid_amount numeric(12,2);
+begin
+    if new.transaction_type is null then
+        new.transaction_type := 'Покупка';
+    end if;
+
+    if new.transaction_amount < 0 then
+        raise exception 'Сумма транзакции не может быть отрицательной';
+    end if;
+
+    if new.bonus_used < 0 then
+        raise exception 'Количество списанных бонусов не может быть отрицательным';
+    end if;
+
+    if new.bonus_accrued < 0 then
+        raise exception 'Количество начисленных бонусов не может быть отрицательным';
+    end if;
+
+    if new.paid_amount < 0 then
+        raise exception 'Оплаченная сумма не может быть отрицательной';
+    end if;
+
+    if new.bonus_compensation_amount < 0 then
+        raise exception 'Сумма удержания при возврате не может быть отрицательной';
+    end if;
+
+    if new.transaction_datetime is null then
+        new.transaction_datetime := current_timestamp at time zone 'Asia/Yekaterinburg';
+    end if;
+
+    v_transaction_date := new.transaction_datetime::date;
+
+
+    -- --------------------------------------------------------
+    -- ПОКУПКА
+    -- --------------------------------------------------------
+    if new.transaction_type = 'Покупка' then
+
+        if new.original_transaction_id is not null then
+            raise exception 'Покупка не должна ссылаться на исходную транзакцию';
+        end if;
+
+        if new.customer_id is null then
+            raise exception 'Для покупки должен быть указан клиент';
+        end if;
+
+        if new.promotion_id is not null and new.offer_id is not null then
+            raise exception 'Нельзя одновременно применить акцию и персональное предложение';
+        end if;
+
+        select
+            cla.account_id,
+            cla.level_id,
+            cla.bonus_balance,
+            ll.min_total_spent,
+            ll.bonus_percent
+        into
+            v_account_id,
+            v_level_id,
+            v_bonus_balance,
+            v_level_min_total_spent,
+            v_bonus_percent
+        from customer_loyalty_accounts cla
+        join loyalty_levels ll
+            on cla.level_id = ll.level_id
+        where cla.customer_id = new.customer_id
+          and cla.account_status = 'Активный'
+        for update of cla;
+
+        if v_account_id is null then
+            raise exception 'Для клиента % не найден активный бонусный счет', new.customer_id;
+        end if;
+
+        if new.bonus_used > v_bonus_balance then
+            raise exception
+                'Недостаточно бонусов для списания. Баланс: %, попытка списания: %',
+                v_bonus_balance,
+                new.bonus_used;
+        end if;
+
+        if new.bonus_used > round(new.transaction_amount * 0.2, 2) then
+            raise exception
+                'Нельзя списать более 20%% от суммы покупки. Максимум: %, попытка списания: %',
+                round(new.transaction_amount * 0.2, 2),
+                new.bonus_used;
+        end if;
+
+        v_paid_amount := new.transaction_amount - new.bonus_used;
+
+        if v_paid_amount < 0 then
+            raise exception 'Списанные бонусы не могут превышать сумму покупки';
+        end if;
+
+        new.paid_amount := v_paid_amount;
+        new.bonus_compensation_amount := 0;
+
+
+        -- Персональное предложение
+        if new.offer_id is not null then
+
+            select
+                p.promotion_name,
+                p.bonus_multiplier,
+                p.extra_bonus,
+                p.required_level_id,
+                p.start_date,
+                p.end_date,
+                p.is_active
+            into
+                v_promotion_name,
+                v_bonus_multiplier,
+                v_extra_bonus,
+                v_required_level_id,
+                v_promotion_start_date,
+                v_promotion_end_date,
+                v_promotion_is_active
+            from customer_offers co
+            join promotions p
+                on co.promotion_id = p.promotion_id
+            where co.offer_id = new.offer_id
+              and co.customer_id = new.customer_id
+              and co.offer_status = 'Назначено'
+              and (
+                    co.valid_until is null
+                    or co.valid_until::date >= v_transaction_date
+                  );
+
+            if v_promotion_name is null then
+                raise exception
+                    'Персональное предложение % недоступно для клиента %',
+                    new.offer_id,
+                    new.customer_id;
+            end if;
+
+
+        -- Общая акция
+        elsif new.promotion_id is not null then
+
+            select
+                p.promotion_name,
+                p.bonus_multiplier,
+                p.extra_bonus,
+                p.required_level_id,
+                p.start_date,
+                p.end_date,
+                p.is_active
+            into
+                v_promotion_name,
+                v_bonus_multiplier,
+                v_extra_bonus,
+                v_required_level_id,
+                v_promotion_start_date,
+                v_promotion_end_date,
+                v_promotion_is_active
+            from promotions p
+            where p.promotion_id = new.promotion_id;
+
+            if v_promotion_name is null then
+                raise exception 'Акция % не найдена', new.promotion_id;
+            end if;
+        end if;
+
+
+        -- Проверки акции / предложения
+        if new.promotion_id is not null or new.offer_id is not null then
+
+            if v_promotion_is_active = false then
+                raise exception 'Выбранная акция отключена';
+            end if;
+
+            if v_transaction_date < v_promotion_start_date
+               or v_transaction_date > v_promotion_end_date then
+                raise exception 'Выбранная акция недействительна на дату покупки';
+            end if;
+
+            if v_required_level_id is not null then
+                select min_total_spent
+                into v_required_level_min_total_spent
+                from loyalty_levels
+                where level_id = v_required_level_id;
+
+                if v_required_level_min_total_spent is null then
+                    raise exception 'Требуемый уровень акции не найден';
+                end if;
+
+                if v_level_min_total_spent < v_required_level_min_total_spent then
+                    raise exception 'Уровень клиента недостаточен для применения выбранной акции';
+                end if;
+            end if;
+        end if;
+
+        v_base_bonus := new.paid_amount * v_bonus_percent / 100;
+
+        new.bonus_accrued := round(v_base_bonus * v_bonus_multiplier + v_extra_bonus, 2);
+
+        return new;
+    end if;
+
+
+    -- --------------------------------------------------------
+    -- ВОЗВРАТ
+    -- --------------------------------------------------------
+    if new.transaction_type = 'Возврат' then
+
+        if new.original_transaction_id is null then
+            raise exception 'Для возврата должна быть указана исходная покупка';
+        end if;
+
+        select *
+        into v_original
+        from transactions
+        where transaction_id = new.original_transaction_id;
+
+        if v_original.transaction_id is null then
+            raise exception 'Исходная транзакция % не найдена', new.original_transaction_id;
+        end if;
+
+        if v_original.transaction_type <> 'Покупка' then
+            raise exception 'Возврат можно оформить только по транзакции типа "Покупка"';
+        end if;
+
+        if v_original.customer_id is null then
+            raise exception 'Нельзя оформить возврат: у исходной покупки не указан клиент';
+        end if;
+
+        if exists (
+            select 1
+            from transactions
+            where transaction_type = 'Возврат'
+              and original_transaction_id = new.original_transaction_id
+        ) then
+            raise exception 'По покупке % уже оформлен возврат', new.original_transaction_id;
+        end if;
+
+        if new.customer_id is null then
+            new.customer_id := v_original.customer_id;
+        end if;
+
+        if new.customer_id <> v_original.customer_id then
+            raise exception 'Клиент возврата должен совпадать с клиентом исходной покупки';
+        end if;
+
+        select
+            cla.account_id,
+            cla.bonus_balance
+        into
+            v_account_id,
+            v_bonus_balance
+        from customer_loyalty_accounts cla
+        where cla.customer_id = new.customer_id
+          and cla.account_status = 'Активный'
+        for update of cla;
+
+        if v_account_id is null then
+            raise exception 'Для клиента % не найден активный бонусный счет', new.customer_id;
+        end if;
+
+        /*
+            Новая логика возврата:
+            - сначала считаем, сколько бонусов доступно для аннулирования;
+            - доступно = текущий баланс + бонусы, которые были списаны в исходной покупке и будут возвращены;
+            - если доступных бонусов не хватает, недостающая часть удерживается из денежного возврата.
+        */
+        v_available_bonus := v_bonus_balance + v_original.bonus_used;
+
+        if v_available_bonus >= v_original.bonus_accrued then
+            v_missing_bonus := 0;
+        else
+            v_missing_bonus := v_original.bonus_accrued - v_available_bonus;
+        end if;
+
+        v_return_paid_amount := v_original.paid_amount - v_missing_bonus;
+
+        if v_return_paid_amount < 0 then
+            raise exception
+                'Невозможно оформить возврат: сумма недостающих бонусов (%) больше суммы денежного возврата (%)',
+                v_missing_bonus,
+                v_original.paid_amount;
+        end if;
+
+        new.transaction_amount := v_original.transaction_amount;
+        new.bonus_used := v_original.bonus_used;
+        new.paid_amount := v_return_paid_amount;
+        new.bonus_accrued := v_original.bonus_accrued;
+        new.bonus_compensation_amount := v_missing_bonus;
+
+        /*
+            Возврат не должен повторно применять акцию или предложение.
+            Он только ссылается на исходную покупку.
+        */
+        new.promotion_id := null;
+        new.offer_id := null;
+
+        return new;
+    end if;
+
+    raise exception 'Неизвестный тип транзакции: %', new.transaction_type;
+end;
+$$;
+
+
+drop trigger if exists trg_prepare_transaction_before_insert on transactions;
+
+create trigger trg_prepare_transaction_before_insert
+before insert on transactions
+for each row
+execute function fn_prepare_transaction_before_insert();
+
+-- ============================================================
+-- 8. Обработка транзакции после добавления
+-- ============================================================
+
+create or replace function fn_process_transaction_after_insert()
+returns trigger
+language plpgsql
+as $$
+declare
+    v_account_id int;
+    v_total_spent numeric(12,2);
+    v_new_level_id int;
+
+    v_promotion_name varchar(200);
+    v_offer_promotion_name varchar(200);
+
+    v_compensation_promotion_id int;
+
+    v_bonus_to_cancel_from_balance numeric(12,2);
+begin
+    select account_id
+    into v_account_id
+    from customer_loyalty_accounts
+    where customer_id = new.customer_id
+    for update;
+
+    if v_account_id is null then
+        raise exception 'Бонусный счет клиента % не найден', new.customer_id;
+    end if;
+
+
+    -- --------------------------------------------------------
+    -- ПОКУПКА
+    -- --------------------------------------------------------
+    if new.transaction_type = 'Покупка' then
+
+        update customer_loyalty_accounts
+        set
+            bonus_balance = bonus_balance - new.bonus_used + new.bonus_accrued,
+            total_spent = total_spent + new.paid_amount
+        where account_id = v_account_id
+        returning total_spent into v_total_spent;
+
+        select level_id
+        into v_new_level_id
+        from loyalty_levels
+        where min_total_spent <= v_total_spent
+        order by min_total_spent desc
+        limit 1;
+
+        if v_new_level_id is not null then
+            update customer_loyalty_accounts
+            set level_id = v_new_level_id
+            where account_id = v_account_id;
+        end if;
+
+        insert into customer_activity
+        (
+            customer_id,
+            activity_type,
+            activity_datetime,
+            description
+        )
+        values
+        (
+            new.customer_id,
+            'Покупка',
+            current_timestamp at time zone 'Asia/Yekaterinburg',
+            'Оформлена покупка №' || new.transaction_id ||
+            ' на сумму ' || new.transaction_amount ||
+            '. Оплачено деньгами: ' || new.paid_amount ||
+            '. Списано бонусов: ' || new.bonus_used
+        );
+
+        if new.bonus_used > 0 then
+            insert into bonus_transactions
+            (
+                account_id,
+                transaction_id,
+                bonus_transaction_type,
+                amount,
+                bonus_transaction_datetime,
+                description
+            )
+            values
+            (
+                v_account_id,
+                new.transaction_id,
+                'Списание',
+                new.bonus_used,
+                current_timestamp at time zone 'Asia/Yekaterinburg',
+                'Списание бонусов при покупке №' || new.transaction_id
+            );
+
+            insert into customer_activity
+            (
+                customer_id,
+                activity_type,
+                activity_datetime,
+                description
+            )
+            values
+            (
+                new.customer_id,
+                'Списание бонусов',
+                current_timestamp at time zone 'Asia/Yekaterinburg',
+                'При покупке №' || new.transaction_id || ' списано бонусов: ' || new.bonus_used
+            );
+        end if;
+
+        if new.bonus_accrued > 0 then
+            insert into bonus_transactions
+            (
+                account_id,
+                transaction_id,
+                bonus_transaction_type,
+                amount,
+                bonus_transaction_datetime,
+                description
+            )
+            values
+            (
+                v_account_id,
+                new.transaction_id,
+                'Начисление',
+                new.bonus_accrued,
+                current_timestamp at time zone 'Asia/Yekaterinburg',
+                'Начисление бонусов за покупку №' || new.transaction_id
+            );
+
+            insert into customer_activity
+            (
+                customer_id,
+                activity_type,
+                activity_datetime,
+                description
+            )
+            values
+            (
+                new.customer_id,
+                'Начисление бонусов',
+                current_timestamp at time zone 'Asia/Yekaterinburg',
+                'За покупку №' || new.transaction_id || ' начислено бонусов: ' || new.bonus_accrued
+            );
+        end if;
+
+        -- Если использовано персональное предложение
+        if new.offer_id is not null then
+
+            select p.promotion_name
+            into v_offer_promotion_name
+            from customer_offers co
+            join promotions p
+                on co.promotion_id = p.promotion_id
+            where co.offer_id = new.offer_id;
+
+            update customer_offers
+            set offer_status = 'Использовано'
+            where offer_id = new.offer_id
+              and offer_status = 'Назначено';
+
+            insert into customer_activity
+            (
+                customer_id,
+                activity_type,
+                activity_datetime,
+                description
+            )
+            values
+            (
+                new.customer_id,
+                'Использовано предложение',
+                current_timestamp at time zone 'Asia/Yekaterinburg',
+                'При покупке №' || new.transaction_id ||
+                ' использовано персональное предложение "' ||
+                coalesce(v_offer_promotion_name, 'Без названия') || '"'
+            );
+        end if;
+
+        -- Если применена общая акция
+        if new.promotion_id is not null then
+
+            select promotion_name
+            into v_promotion_name
+            from promotions
+            where promotion_id = new.promotion_id;
+
+            insert into customer_activity
+            (
+                customer_id,
+                activity_type,
+                activity_datetime,
+                description
+            )
+            values
+            (
+                new.customer_id,
+                'Применена акция',
+                current_timestamp at time zone 'Asia/Yekaterinburg',
+                'При покупке №' || new.transaction_id ||
+                ' применена акция "' ||
+                coalesce(v_promotion_name, 'Без названия') || '"'
+            );
+        end if;
+
+        return new;
+    end if;
+
+
+    -- --------------------------------------------------------
+    -- ВОЗВРАТ
+    -- --------------------------------------------------------
+    if new.transaction_type = 'Возврат' then
+
+        /*
+            new.bonus_accrued — сколько всего бонусов нужно аннулировать по исходной покупке.
+            new.bonus_compensation_amount — часть, которую не смогли списать бонусами и удержали деньгами.
+            v_bonus_to_cancel_from_balance — сколько реально списываем с бонусного счета.
+        */
+        v_bonus_to_cancel_from_balance := new.bonus_accrued - new.bonus_compensation_amount;
+
+        if v_bonus_to_cancel_from_balance < 0 then
+            v_bonus_to_cancel_from_balance := 0;
+        end if;
+
+        update customer_loyalty_accounts
+        set
+            bonus_balance = bonus_balance + new.bonus_used - v_bonus_to_cancel_from_balance,
+            total_spent = greatest(total_spent - new.paid_amount, 0)
+        where account_id = v_account_id
+        returning total_spent into v_total_spent;
+
+        select level_id
+        into v_new_level_id
+        from loyalty_levels
+        where min_total_spent <= v_total_spent
+        order by min_total_spent desc
+        limit 1;
+
+        if v_new_level_id is not null then
+            update customer_loyalty_accounts
+            set level_id = v_new_level_id
+            where account_id = v_account_id;
+        end if;
+
+        insert into customer_activity
+        (
+            customer_id,
+            activity_type,
+            activity_datetime,
+            description
+        )
+        values
+        (
+            new.customer_id,
+            'Возврат покупки',
+            current_timestamp at time zone 'Asia/Yekaterinburg',
+            'Оформлен возврат по покупке №' ||
+            new.original_transaction_id ||
+            '. Сумма исходной покупки: ' ||
+            new.transaction_amount ||
+            '. Возвращено деньгами: ' ||
+            new.paid_amount ||
+            '. Удержано за недостающие бонусы: ' ||
+            new.bonus_compensation_amount
+        );
+
+        if new.bonus_used > 0 then
+            insert into bonus_transactions
+            (
+                account_id,
+                transaction_id,
+                bonus_transaction_type,
+                amount,
+                bonus_transaction_datetime,
+                description
+            )
+            values
+            (
+                v_account_id,
+                new.transaction_id,
+                'Корректировка',
+                new.bonus_used,
+                current_timestamp at time zone 'Asia/Yekaterinburg',
+                'Возврат бонусов, списанных при покупке №' || new.original_transaction_id
+            );
+
+            insert into customer_activity
+            (
+                customer_id,
+                activity_type,
+                activity_datetime,
+                description
+            )
+            values
+            (
+                new.customer_id,
+                'Начисление бонусов',
+                current_timestamp at time zone 'Asia/Yekaterinburg',
+                'При возврате покупки №' ||
+                new.original_transaction_id ||
+                ' клиенту возвращено бонусов: ' ||
+                new.bonus_used
+            );
+        end if;
+
+        if v_bonus_to_cancel_from_balance > 0 then
+            insert into bonus_transactions
+            (
+                account_id,
+                transaction_id,
+                bonus_transaction_type,
+                amount,
+                bonus_transaction_datetime,
+                description
+            )
+            values
+            (
+                v_account_id,
+                new.transaction_id,
+                'Корректировка',
+                v_bonus_to_cancel_from_balance,
+                current_timestamp at time zone 'Asia/Yekaterinburg',
+                'Аннулирование бонусов, начисленных за покупку №' || new.original_transaction_id
+            );
+
+            insert into customer_activity
+            (
+                customer_id,
+                activity_type,
+                activity_datetime,
+                description
+            )
+            values
+            (
+                new.customer_id,
+                'Списание бонусов',
+                current_timestamp at time zone 'Asia/Yekaterinburg',
+                'При возврате покупки №' ||
+                new.original_transaction_id ||
+                ' аннулировано бонусов с бонусного счета: ' ||
+                v_bonus_to_cancel_from_balance
+            );
+        end if;
+
+        if new.bonus_compensation_amount > 0 then
+            insert into customer_activity
+            (
+                customer_id,
+                activity_type,
+                activity_datetime,
+                description
+            )
+            values
+            (
+                new.customer_id,
+                'Возврат покупки',
+                current_timestamp at time zone 'Asia/Yekaterinburg',
+                'При возврате покупки №' ||
+                new.original_transaction_id ||
+                ' удержано ' ||
+                new.bonus_compensation_amount ||
+                ' руб. из денежного возврата из-за нехватки бонусов для аннулирования'
+            );
+        end if;
+
+
+        -- Назначение компенсационного предложения после возврата
+        select promotion_id
+        into v_compensation_promotion_id
+        from promotions
+        where is_active = true
+          and promotion_type = 'Возврат покупки'
+          and (current_timestamp at time zone 'Asia/Yekaterinburg')::date between start_date and end_date
+        order by start_date desc, promotion_id desc
+        limit 1;
+
+        if v_compensation_promotion_id is not null then
+
+            if not exists (
+                select 1
+                from customer_offers
+                where customer_id = new.customer_id
+                  and promotion_id = v_compensation_promotion_id
+                  and offer_status = 'Назначено'
+                  and (
+                        valid_until is null
+                        or valid_until::date >= (current_timestamp at time zone 'Asia/Yekaterinburg')::date
+                      )
+            ) then
+
+                insert into customer_offers
+                (
+                    customer_id,
+                    promotion_id,
+                    assigned_at,
+                    valid_until,
+                    offer_status
+                )
+                values
+                (
+                    new.customer_id,
+                    v_compensation_promotion_id,
+                    current_timestamp at time zone 'Asia/Yekaterinburg',
+                    (current_timestamp at time zone 'Asia/Yekaterinburg') + interval '14 days',
+                    'Назначено'
+                );
+
+                insert into customer_activity
+                (
+                    customer_id,
+                    activity_type,
+                    activity_datetime,
+                    description
+                )
+                values
+                (
+                    new.customer_id,
+                    'Получено предложение',
+                    current_timestamp at time zone 'Asia/Yekaterinburg',
+                    'После возврата покупки клиенту назначено компенсационное персональное предложение на 14 дней'
+                );
+            end if;
+        end if;
+
+        return new;
+    end if;
+
+    return new;
+end;
+$$;
+
+
+drop trigger if exists trg_process_transaction_after_insert on transactions;
+
+create trigger trg_process_transaction_after_insert
+after insert on transactions
+for each row
+execute function fn_process_transaction_after_insert();

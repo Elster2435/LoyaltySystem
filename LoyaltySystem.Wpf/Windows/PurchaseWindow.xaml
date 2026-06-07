@@ -42,7 +42,7 @@
                 <RowDefinition Height="10"/>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="10"/>
-                <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/>
             </Grid.RowDefinitions>
 
             <TextBlock Grid.Row="0"
@@ -134,7 +134,7 @@
                      Grid.Column="1"
                      AcceptsReturn="True"
                      TextWrapping="Wrap"
-                     Height="180"
+                     Height="100"
                      VerticalScrollBarVisibility="Auto"/>
         </Grid>
 

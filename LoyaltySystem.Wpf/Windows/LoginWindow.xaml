@@ -31,7 +31,7 @@
                        Margin="0,0,0,5"/>
 
             <TextBox x:Name="LoginTextBox"
-                     Height="34"
+                     Height="30"
                      VerticalContentAlignment="Center"
                      FontSize="14"/>
         </StackPanel>
@@ -41,7 +41,7 @@
                        Margin="0,0,0,5"/>
 
             <PasswordBox x:Name="PasswordBox"
-                         Height="34"
+                         Height="30"
                          VerticalContentAlignment="Center"
                          FontSize="14"
                          KeyDown="PasswordBox_KeyDown"/>
@@ -49,7 +49,8 @@
 
         <Button Grid.Row="6"
                 Content="Войти"
-                Height="38"
+                Width="100"
+                Height="35"
                 FontSize="15"
                 FontWeight="SemiBold"
                 Click="LoginButton_Click"/>

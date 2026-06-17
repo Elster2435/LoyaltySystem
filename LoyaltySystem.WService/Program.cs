@@ -24,7 +24,9 @@ builder.Services.AddSingleton(_ =>
 });
 
 builder.Services.AddSingleton<DatabaseAutomationService>();
+builder.Services.AddSingleton<BackupService>();
 builder.Services.AddHostedService<Worker>();
+builder.Services.AddHostedService<BackupWorker>();
 
 var host = builder.Build();
 

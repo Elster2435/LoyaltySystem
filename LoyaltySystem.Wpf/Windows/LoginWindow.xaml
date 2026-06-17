@@ -56,7 +56,7 @@
                 Click="LoginButton_Click"/>
 
         <TextBlock Grid.Row="8"
-                   Text="Информационная система учета и мониторинга лояльности покупателей"
+                   Text="Информационная система учета и мониторинга лояльности покупателей. Фотостудия Lampa"
                    TextWrapping="Wrap"
                    TextAlignment="Center"
                    Foreground="Gray"/>

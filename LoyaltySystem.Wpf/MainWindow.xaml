@@ -3,95 +3,99 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="Система лояльности"
         Height="800"
-        Width="1280">
+        Width="1500"
+        WindowStartupLocation="CenterScreen"
+        ResizeMode="NoResize">
     <Grid>
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="220"/>
+            <ColumnDefinition Width="250"/>
             <ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>
+        
+        <ScrollViewer>
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+                <StackPanel Grid.Row="0">
+                    <TextBlock Text="Система лояльности"
+                               FontSize="20"
+                               FontWeight="Bold"
+                               Margin="10"/>
 
-        <Grid>
-            <Grid.RowDefinitions>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="*"/>
-                <RowDefinition Height="Auto"/>
-            </Grid.RowDefinitions>
-            <StackPanel Grid.Row="0">
-                <TextBlock Text="Система лояльности"
-                           FontSize="20"
-                           FontWeight="Bold"
-                           Margin="10"/>
+                    <Button Content="Мониторинг"
+                            Height="40"
+                            Margin="10"
+                            Click="MonitoringButton_Click"/>
 
-                <Button Content="Мониторинг"
-                        Height="40"
-                        Margin="10"
-                        Click="MonitoringButton_Click"/>
+                    <Button Content="Клиенты"
+                            Height="40"
+                            Margin="10"
+                            Click="CustomersButton_Click"/>
 
-                <Button Content="Клиенты"
-                        Height="40"
-                        Margin="10"
-                        Click="CustomersButton_Click"/>
+                    <Button Content="Транзакции"
+                            Height="40"
+                            Margin="10"
+                            Click="TransactionsButton_Click"/>
 
-                <Button Content="Транзакции"
-                        Height="40"
-                        Margin="10"
-                        Click="TransactionsButton_Click"/>
+                    <Button Content="Бонусные операции"
+                            Height="40"
+                            Margin="10"
+                            Click="BonusTransactionsButton_Click"/>
 
-                <Button Content="Бонусные операции"
-                        Height="40"
-                        Margin="10"
-                        Click="BonusTransactionsButton_Click"/>
+                    <Button Content="Бонусные счета"
+                            Height="40"
+                            Margin="10"
+                            Click="LoyaltyAccountsButton_Click"/>
 
-                <Button Content="Бонусные счета"
-                        Height="40"
-                        Margin="10"
-                        Click="LoyaltyAccountsButton_Click"/>
+                    <Button Content="Активность клиентов"
+                            Height="40"
+                            Margin="10"
+                            Click="CustomerActivitiesButton_Click"/>
 
-                <Button Content="Активность клиентов"
-                        Height="40"
-                        Margin="10"
-                        Click="CustomerActivitiesButton_Click"/>
+                    <Button Content="Акции"
+                            Height="40"
+                            Margin="10"
+                            Click="PromotionsButton_Click"/>
 
-                <Button Content="Акции"
-                        Height="40"
-                        Margin="10"
-                        Click="PromotionsButton_Click"/>
+                    <Button Content="Персональные предложения"
+                            Height="40"
+                            Margin="10"
+                            Click="CustomerOffersButton_Click"/>
 
-                <Button Content="Персональные предложения"
-                        Height="40"
-                        Margin="10"
-                        Click="CustomerOffersButton_Click"/>
+                    <Button x:Name="UsersButton"
+                            Content="Пользователи"
+                            Height="40"
+                            Margin="10"
+                            Click="UsersButton_Click"/>
 
-                <Button x:Name="UsersButton"
-                        Content="Пользователи"
-                        Height="40"
-                        Margin="10"
-                        Click="UsersButton_Click"/>
-                
-            </StackPanel>
-            <StackPanel Grid.Row="3">
+                </StackPanel>
+                <StackPanel Grid.Row="3">
 
-                <TextBlock Text="Текущий пользователь:"
-                           FontWeight="Bold"
-                           TextWrapping="Wrap"
-                           Margin="10"/>
+                    <TextBlock Text="Текущий пользователь:"
+                               FontWeight="Bold"
+                               TextWrapping="Wrap"
+                               Margin="10"/>
 
-                <TextBlock x:Name="CurrentUserTextBlock"
-                           TextWrapping="Wrap"
-                           Margin="10"/>
+                    <TextBlock x:Name="CurrentUserTextBlock"
+                               TextWrapping="Wrap"
+                               Margin="10"/>
 
-                <TextBlock x:Name="CurrentRoleTextBlock"
-                           TextWrapping="Wrap"
-                           Foreground="Gray"
-                           Margin="10"/>
+                    <TextBlock x:Name="CurrentRoleTextBlock"
+                               TextWrapping="Wrap"
+                               Foreground="Gray"
+                               Margin="10"/>
 
-                <Button Content="Выйти"
-                        Height="40"
-                        Margin="10"
-                        Click="LogoutButton_Click"/>
-            </StackPanel>
-        </Grid>
-
+                    <Button Content="Выйти"
+                            Height="40"
+                            Margin="10"
+                            Click="LogoutButton_Click"/>
+                </StackPanel>
+            </Grid>
+        </ScrollViewer>
+        
         <Frame x:Name="MainFrame"
                Grid.Column="1"
                NavigationUIVisibility="Hidden"/>
